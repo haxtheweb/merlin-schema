@@ -22,6 +22,7 @@ This repo is **documentation only**. The code that consumes this schema lives in
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/utils/*Program.js` — real Program factory modules (`EditTagsProgram.js`, `ExportSiteProgram.js`, `EditTitleProgram.js`, etc.).
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/haxcms-site-editor-ui.js` (`firstUpdated()`) — the largest single registration site for Options and Programs.
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/haxcms-cheat-codes.js` — lightweight static Option examples (Easter eggs).
+- `haxtheweb/webcomponents` → `elements/utils/lib/keyboardShortcuts.js` — the shared `KeyboardShortcutManager` registry that the Option `shortcut` field resolves through (also used by HAXcms `Ctrl+Shift` bindings and HAXStore markdown triggers).
 
 ## Files in this repo
 
@@ -87,7 +88,9 @@ Required fields: `title`, `value`, `eventName`.
 | `more` | lit-html TemplateResult | no | — | Extra detail rendered in an expandable `<details>` section of the row. |
 | `inline` | boolean | no | `false` | When true, the option is eligible to appear in inline (mini) mode. |
 | `hidden` | boolean | no | — | When true, the option is registered and invokable by `machineName`/shortcut but excluded from browse/search results. |
+| `shortcut` | string \| object | no | — | Keyboard-shortcut metadata linking the option to the shared `KeyboardShortcutManager` registry. Either a registry id string (e.g. `"cms-save"`) or an inline descriptor object (see Shortcut metadata). Resolved to `shortcutLabel`; both excluded from the search index. |
 | `index` | string | auto | — | **AUTO-BUILT by `defineOption()` — do not set this yourself.** A space-joined, de-duplicated, lowercased search index derived from `tags`/`path`/`title`/`voice`/`more`/`context` plus the full path phrase. |
+| `shortcutLabel` | string | auto | — | **AUTO-BUILT by `defineOption()` from `shortcut` — do not set this yourself.** Human-readable label from `KeyboardShortcutManager.getLabel()` (e.g. `"Ctrl⇧S"` for a binding, `"###"` for a markdown trigger); empty string when none resolves. |
 
 ---
 
@@ -238,6 +241,54 @@ This layer is **optional** — Options and Programs work fully without it. The `
 
 ---
 
+## Shortcut metadata (optional facet)
+
+An Option (or Program entry row) can declare a `shortcut` field that links it to the shared **`KeyboardShortcutManager`** registry — the single source of truth for keyboard/insertion shortcuts across the HAX ecosystem. That registry is also used by HAXcms `Ctrl+Shift+[Key]` bindings and the HAXStore markdown-trigger-to-gizmo map, so a Merlin option can reference the *same* shortcut descriptor those subsystems use.
+
+`shortcut` accepts either:
+
+- a **registry id string** (e.g. `"cms-save"`) — resolves to a descriptor previously registered via `KeyboardShortcutManagerInstance.register(...)`, or
+- an **inline descriptor object** with the canonical shape:
+
+```js
+{
+  id: "cms-save",                          // stable unique id
+  type: "binding",                         // 'binding' (modifier+key) | 'markdown' (typed trigger insert)
+  key: "S",                                // physical key (binding)
+  ctrl: true, shift: true, alt: false, meta: false, // binding modifiers
+  trigger: "###",                          // markdown trigger (type: 'markdown')
+  tag: "h3",                               // markdown insert target tag
+  content: "",                             // markdown insert inner content
+  description: "Save page",                // human-readable
+  context: "edit",                         // 'edit' | 'view' | 'global'
+  allowInInput: false,                     // whether the binding fires while focus is in an input
+  callback: Function,                      // optional direct callback (binding)
+  condition: Function,                     // optional active-condition (binding)
+  eventName: "super-daemon-element-method", // optional event to fire instead of / alongside callback
+}
+```
+
+When `shortcut` is present, `defineOption()` resolves a human-readable label via `KeyboardShortcutManager.getLabel()` and stores it on `shortcutLabel` (e.g. `"Ctrl⇧S"` for a binding, `"###"` for a markdown trigger). The UI reads `shortcutLabel` to render a keyboard hint in the row. Both `shortcut` and `shortcutLabel` are excluded from the search index so they don't pollute text matching.
+
+Real example (from `haxcms-site-editor-ui.js`):
+
+```js
+SuperDaemonInstance.defineOption({
+  title: this.t.save,
+  icon: "icons:save",
+  tags: ["CMS", "save", "page"],
+  shortcut: "cms-save", // links to the Ctrl+Shift+S binding
+  value: { target: this, method: "_editButtonTap" },
+  context: "HAX",
+  eventName: "super-daemon-element-method",
+  path: "CMS/action/save",
+});
+```
+
+This layer is **optional** — the `shortcut` field is purely additive and does not change how an option is invoked; it only surfaces a keyboard-hint label in the UI and (optionally) ties the option to a shared descriptor for cross-subsystem consistency.
+
+---
+
 ## Minimal working sample
 
 A static Option (fires one event and closes):
@@ -249,6 +300,7 @@ SuperDaemonInstance.defineOption({
   title: "Save",
   icon: "icons:save",
   tags: ["CMS", "save", "page"],
+  shortcut: "cms-save", // links to the Ctrl+Shift+S binding
   context: "HAX",
   eventName: "super-daemon-element-method",
   path: "CMS/action/save",

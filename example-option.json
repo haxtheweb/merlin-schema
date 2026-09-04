@@ -1,5 +1,5 @@
 {
-  "$comment": "Annotated real-world Merlin Option. Adapted from the 'DKMODE' cheat code registered in haxcms-cheat-codes.js and the 'Dark Mode Toggle' option registered in haxcms-site-editor-ui.js firstUpdated(). This is a STATIC option — selecting it fires a single CustomEvent and closes the palette. Compare with example-program.json for the dynamic variant.",
+  "$comment": "Annotated real-world Merlin Option. Adapted from the 'DKMODE' cheat code registered in haxcms-cheat-codes.js and the 'Dark Mode Toggle' option registered in haxcms-site-editor-ui.js firstUpdated(). This is a STATIC option — selecting it fires a single CustomEvent and closes the palette. The `shortcut` field (inline descriptor form) links the option to the shared KeyboardShortcutManager registry; defineOption() resolves it to shortcutLabel='Ctrl⇧D'. The registry-id-string form (e.g. \"shortcut\": \"cms-save\") is shown in the README minimal sample. Compare with example-program.json for the dynamic variant.",
 
   "title": "DKMODE",
   "icon": "hax:wizard-hat",
@@ -9,6 +9,15 @@
   "priority": -1000,
   "eventName": "super-daemon-element-method",
   "path": "cheat/dkmode",
+  "shortcut": {
+    "id": "cms-dkmode",
+    "type": "binding",
+    "key": "D",
+    "ctrl": true,
+    "shift": true,
+    "description": "Toggle DK mode (big head)",
+    "context": "global"
+  },
   "value": {
     "$comment": "For eventName 'super-daemon-element-method', the runtime calls value.target[value.method](...value.args). Here it invokes editorInstance._executeCheatDKMODE().",
     "target": "editorInstance",

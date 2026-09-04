@@ -40,6 +40,13 @@
       "description": "Voice-command phrase pattern that launches the program (e.g. 'export site')."
     },
     "more": { "description": "Extra detail for the entry row (lit-html TemplateResult at runtime)." },
+    "shortcut": {
+      "description": "Optional keyboard-shortcut metadata for the entry row, linking it to the shared KeyboardShortcutManager registry. May be a registry id string (e.g. 'cms-save') or an inline descriptor object (canonical shape documented in merlin-option.schema.json and the README). defineOption() resolves the label onto shortcutLabel; both fields are excluded from the search index.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
     "value": {
       "type": "object",
       "description": "Program payload. Required keys: name and program. Optional: machineName, context, placeholder, initialValue.",
@@ -75,6 +82,10 @@
     "index": {
       "type": "string",
       "description": "AUTO-BUILT by defineOption() — do not set manually."
+    },
+    "shortcutLabel": {
+      "type": "string",
+      "description": "AUTO-BUILT by defineOption() from the shortcut field — do not set this yourself. Human-readable label from KeyboardShortcutManager.getLabel() (e.g. 'Ctrl⇧S'); empty string when none resolves."
     }
   },
   "additionalProperties": false

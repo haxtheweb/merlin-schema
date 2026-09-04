@@ -66,9 +66,20 @@
       "type": "boolean",
       "description": "When true, the option is registered and invokable by machineName/shortcut but excluded from browse/search results. Used for dedicated-shortcut-only commands (e.g. emoji/symbol pickers)."
     },
+    "shortcut": {
+      "description": "Optional keyboard-shortcut metadata linking this option to the shared KeyboardShortcutManager registry. May be a registry id string (e.g. 'cms-save') that resolves to a previously-registered descriptor, OR an inline descriptor object with the canonical shape { id, type: 'binding'|'markdown', key, ctrl, shift, alt, meta, trigger, tag, content, description, context, allowInInput, callback, condition, eventName }. When present, defineOption() resolves a human-readable label onto shortcutLabel. Both shortcut and shortcutLabel are excluded from the search index.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
     "index": {
       "type": "string",
       "description": "AUTO-BUILT by defineOption() — do not set this yourself. A space-joined, de-duplicated, lowercased search index derived from tags/path/title/voice/more/context plus the full path phrase."
+    },
+    "shortcutLabel": {
+      "type": "string",
+      "description": "AUTO-BUILT by defineOption() from the shortcut field — do not set this yourself. The human-readable label resolved via KeyboardShortcutManager.getLabel() (e.g. 'Ctrl⇧S' for a binding, '###' for a markdown trigger). Empty string when no label resolves."
     }
   },
   "additionalProperties": false

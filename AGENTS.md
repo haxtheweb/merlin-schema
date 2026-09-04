@@ -20,6 +20,7 @@ This repo is documentation only. The actual code that consumes this schema lives
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/utils/*Program.js` — real Program factory modules (`EditTagsProgram.js`, `ExportSiteProgram.js`, `EditTitleProgram.js`, etc.).
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/haxcms-site-editor-ui.js` (`firstUpdated()`) — the largest single registration site for Options and Programs.
 - `haxtheweb/webcomponents` → `elements/haxcms-elements/lib/core/haxcms-cheat-codes.js` — lightweight static Option examples (Easter eggs).
+- `haxtheweb/webcomponents` → `elements/utils/lib/keyboardShortcuts.js` — the shared `KeyboardShortcutManager` registry that the Option `shortcut` field resolves through (also used by HAXcms `Ctrl+Shift` bindings and HAXStore markdown triggers).
 
 ## Working on this repo
 
