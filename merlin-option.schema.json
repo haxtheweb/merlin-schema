@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://haxtheweb.org/schemas/merlin-option.schema.json",
+  "title": "MerlinOption",
+  "description": "A static, searchable command registered with the Merlin (Super Daemon) singleton via `SuperDaemonInstance.defineOption(option)`. When the user selects the row, a CustomEvent named `eventName` is dispatched with `detail` set to `value`. The `value` object's shape is governed by which `eventName` is used (see merlin-program.schema.json for the program variant, and the README event-contract table for the element-method / element-click / disabled variants).",
+  "type": "object",
+  "required": ["title", "value", "eventName"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Primary display label shown in the result row. Used for alphabetical sort and exact-match priority boosting. Required."
+    },
+    "value": {
+      "type": "object",
+      "description": "Payload dispatched as the `detail` of the CustomEvent named by `eventName`. Shape varies by eventName: {target, method, args?} for super-daemon-element-method; {target} for super-daemon-element-click; {name, program, machineName?, placeholder?, initialValue?, context?} for super-daemon-run-program; {disabled: true} for disabled. Required.",
+      "additionalProperties": true
+    },
+    "eventName": {
+      "type": "string",
+      "description": "Name of the CustomEvent dispatched when the row is selected. Known values: super-daemon-element-method, super-daemon-element-click, super-daemon-run-program, disabled. Required."
+    },
+    "icon": {
+      "type": "string",
+      "description": "Icon name (e.g. 'icons:save', 'hax:wizard-hat') rendered by simple-icon-lite in the row."
+    },
+    "image": {
+      "type": "string",
+      "description": "Image URL rendered in the row as an alternative to icon."
+    },
+    "textCharacter": {
+      "type": "string",
+      "description": "A single character or emoji rendered in the row as an alternative to icon/image (e.g. '🍌', '🎅')."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Searchable keyword tags. Also rendered as simple-tag chips in the row. Defaults to [] if omitted."
+    },
+    "path": {
+      "type": "string",
+      "description": "Breadcrumb-style location string (e.g. 'CMS/admin/seo', '>settings/platformAudience'). Searchable as a whole phrase and split on '/'. Defaults to '' if omitted."
+    },
+    "priority": {
+      "type": "number",
+      "description": "Sort weight. Lower numbers sort higher (appear nearer the top). Negative values boost prominence; an exact title match forces -10000000. Defaults to 0."
+    },
+    "context": {
+      "description": "Visibility scope. A single string or an array of strings. '*' (the default) means the option is available in every context. Other common values: 'CMS', 'HAX', 'admin', 'logged-in', '>' (developer mode). An option only appears when the active commandContext intersects its context list.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "voice": {
+      "type": "string",
+      "description": "Voice-command phrase pattern for the hal-9000 speech layer, e.g. '(toggle) dark mode'. Parenthesized segments are optional words. Falls back to `title` when omitted."
+    },
+    "more": {
+      "description": "Extra detail rendered in an expandable details section of the row. In the runtime this is a lit-html TemplateResult, so it is not JSON-typed here; treat as freeform renderable content."
+    },
+    "inline": {
+      "type": "boolean",
+      "description": "When true, the option is eligible to appear in inline (mini) mode. Defaults to false."
+    },
+    "hidden": {
+      "type": "boolean",
+      "description": "When true, the option is registered and invokable by machineName/shortcut but excluded from browse/search results. Used for dedicated-shortcut-only commands (e.g. emoji/symbol pickers)."
+    },
+    "index": {
+      "type": "string",
+      "description": "AUTO-BUILT by defineOption() — do not set this yourself. A space-joined, de-duplicated, lowercased search index derived from tags/path/title/voice/more/context plus the full path phrase."
+    }
+  },
+  "additionalProperties": false
+}

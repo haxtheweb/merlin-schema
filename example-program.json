@@ -1,0 +1,37 @@
+{
+  "$comment": "Annotated real-world Merlin Program. Adapted from the 'Update page tags' Program registered in haxcms-site-editor-ui.js firstUpdated() and the createEditTagsProgram factory in EditTagsProgram.js. A Program is an Option whose eventName is 'super-daemon-run-program' and whose value.program is an async function. Selecting the entry row launches program mode; each keystroke re-invokes the function (debounced ~150ms) and its returned Option[] replaces the result list. NOTE: 'program' and 'initialValue' are JavaScript functions at runtime — represented here as descriptive strings because JSON cannot encode a function. See README for the authoritative callable signatures.",
+
+  "title": "Update page tags",
+  "icon": "icons:label",
+  "tags": ["CMS", "edit", "tags", "metadata"],
+  "eventName": "super-daemon-run-program",
+  "path": "CMS/edit/tags",
+  "context": ["CMS"],
+  "voice": "edit tags",
+
+  "value": {
+    "name": "Update page tags",
+    "machineName": "edit-tags",
+    "context": "CMS",
+    "placeholder": "Enter tags separated by commas",
+
+    "initialValue": "async (values) => { const activeItem = toJS(store.activeItem); return (activeItem && activeItem.metadata && activeItem.metadata.tags) || ''; }",
+
+    "program": "async (input, values) => { const { createEditTagsProgram } = await import('./utils/EditTagsProgram.js'); return createEditTagsProgram(context)(input, values); }",
+
+    "$comment_program_returns": "The program returns an array of Option-shaped rows. Below is an example of one such row (the 'Save tags' confirm row) as it would appear in the returned array — shown inline for documentation, NOT part of the value object at registration time.",
+
+    "_example_returned_row": {
+      "title": "Save tags: physics, lab",
+      "icon": "icons:check",
+      "tags": ["confirm", "save"],
+      "eventName": "super-daemon-element-method",
+      "path": "CMS/edit/tags/confirm",
+      "value": {
+        "target": "globalThis",
+        "method": "dispatchEvent",
+        "args": ["new CustomEvent('haxcms-save-node-details', { detail: { id: 'activeItem.id', operation: 'setTags', tags: 'physics, lab' } })"]
+      }
+    }
+  }
+}

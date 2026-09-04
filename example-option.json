@@ -1,0 +1,18 @@
+{
+  "$comment": "Annotated real-world Merlin Option. Adapted from the 'DKMODE' cheat code registered in haxcms-cheat-codes.js and the 'Dark Mode Toggle' option registered in haxcms-site-editor-ui.js firstUpdated(). This is a STATIC option — selecting it fires a single CustomEvent and closes the palette. Compare with example-program.json for the dynamic variant.",
+
+  "title": "DKMODE",
+  "icon": "hax:wizard-hat",
+  "textCharacter": "🍌",
+  "tags": ["cheat", "character", "dk", "donkey-kong"],
+  "context": ["*", "CMS", "HAX"],
+  "priority": -1000,
+  "eventName": "super-daemon-element-method",
+  "path": "cheat/dkmode",
+  "value": {
+    "$comment": "For eventName 'super-daemon-element-method', the runtime calls value.target[value.method](...value.args). Here it invokes editorInstance._executeCheatDKMODE().",
+    "target": "editorInstance",
+    "method": "_executeCheatDKMODE",
+    "args": []
+  }
+}
