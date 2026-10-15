@@ -1,0 +1,11 @@
+{
+  "title": "Open site settings",
+  "icon": "icons:settings",
+  "tags": ["CMS", "settings", "admin"],
+  "path": "CMS/admin/settings",
+  "context": ["CMS", "admin"],
+  "eventName": "super-daemon-element-click",
+  "value": {
+    "target": "the settings button element (an element reference at runtime)"
+  }
+}

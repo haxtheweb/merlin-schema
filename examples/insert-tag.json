@@ -1,0 +1,15 @@
+{
+  "title": "Block quote",
+  "description": "A well designed quote element with image of author",
+  "icon": "editor:format-quote",
+  "tags": ["Layout", "quote"],
+  "inline": true,
+  "path": "HAX/insert/block/block-quote",
+  "context": ["HAX"],
+  "eventName": "hax-super-daemon-insert-tag",
+  "value": {
+    "value": "block-quote",
+    "eventName": "insert-tag",
+    "demoSchema": true
+  }
+}

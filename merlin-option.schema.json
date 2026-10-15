@@ -1,86 +1,476 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://haxtheweb.org/schemas/merlin-option.schema.json",
+  "$id": "https://raw.githubusercontent.com/haxtheweb/merlin-schema/main/merlin-option.schema.json",
   "title": "MerlinOption",
-  "description": "A static, searchable command registered with the Merlin (Super Daemon) singleton via `SuperDaemonInstance.defineOption(option)`. When the user selects the row, a CustomEvent named `eventName` is dispatched with `detail` set to `value`. The `value` object's shape is governed by which `eventName` is used (see merlin-program.schema.json for the program variant, and the README event-contract table for the element-method / element-click / disabled variants).",
+  "description": "A command registered with the Merlin (super-daemon) singleton via `SuperDaemonInstance.defineOption(option)`, or a row returned by a Program. Selecting the row dispatches a CustomEvent named `eventName` with `detail` = `value`, then closes the palette unless eventName is `super-daemon-run-program`. The shape of `value` is checked per known eventName below. Runtime values that JSON cannot hold (element references, functions, lit TemplateResults) appear as descriptive strings in JSON examples; scripts/validate.js accepts the real objects when validating JS source. Unknown keys are rejected so typos are caught; custom keys must start with `x-` (note: defineOption indexes every string field for search, including `x-` ones).",
   "type": "object",
-  "required": ["title", "value", "eventName"],
+  "required": [
+    "title",
+    "value",
+    "eventName"
+  ],
   "properties": {
     "title": {
       "type": "string",
-      "description": "Primary display label shown in the result row. Used for alphabetical sort and exact-match priority boosting. Required."
+      "minLength": 1,
+      "description": "Primary label in the result row; used for alphabetical sort and exact-match priority boosting."
     },
     "value": {
       "type": "object",
-      "description": "Payload dispatched as the `detail` of the CustomEvent named by `eventName`. Shape varies by eventName: {target, method, args?} for super-daemon-element-method; {target} for super-daemon-element-click; {name, program, machineName?, placeholder?, initialValue?, context?} for super-daemon-run-program; {disabled: true} for disabled. Required.",
-      "additionalProperties": true
+      "description": "Payload dispatched as the event `detail`. Shape depends on `eventName` (see allOf below and the README event table)."
     },
     "eventName": {
       "type": "string",
-      "description": "Name of the CustomEvent dispatched when the row is selected. Known values: super-daemon-element-method, super-daemon-element-click, super-daemon-run-program, disabled. Required."
+      "minLength": 1,
+      "description": "CustomEvent dispatched on selection. Handled by super-daemon: super-daemon-element-method, super-daemon-element-click, super-daemon-run-program. Handled elsewhere: hax-super-daemon-insert-tag (HAXStore inserts a block), execute-keyboard-shortcut (haxcms-site-editor-ui runs a registered shortcut). No-op rows: disabled, super-daemon-noop. Any other name is dispatched as a plain event for your own listener.",
+      "examples": [
+        "super-daemon-element-method",
+        "super-daemon-element-click",
+        "super-daemon-run-program",
+        "hax-super-daemon-insert-tag",
+        "execute-keyboard-shortcut",
+        "disabled",
+        "super-daemon-noop"
+      ]
     },
     "icon": {
       "type": "string",
-      "description": "Icon name (e.g. 'icons:save', 'hax:wizard-hat') rendered by simple-icon-lite in the row."
+      "description": "Icon name (`iconset:name`, e.g. `icons:save`) rendered by simple-icon-lite."
     },
     "image": {
       "type": "string",
-      "description": "Image URL rendered in the row as an alternative to icon."
+      "description": "Image URL rendered instead of an icon."
     },
     "textCharacter": {
       "type": "string",
-      "description": "A single character or emoji rendered in the row as an alternative to icon/image (e.g. '🍌', '🎅')."
+      "description": "Character or emoji rendered instead of an icon/image."
     },
     "tags": {
       "type": "array",
-      "items": { "type": "string" },
-      "description": "Searchable keyword tags. Also rendered as simple-tag chips in the row. Defaults to [] if omitted."
+      "items": {
+        "type": "string"
+      },
+      "description": "Search keywords, also rendered as tag chips. defineOption() defaults it to []."
     },
     "path": {
       "type": "string",
-      "description": "Breadcrumb-style location string (e.g. 'CMS/admin/seo', '>settings/platformAudience'). Searchable as a whole phrase and split on '/'. Defaults to '' if omitted."
+      "description": "Breadcrumb-style location (e.g. `CMS/admin/seo`); searchable as a phrase and per `/` segment. defineOption() defaults it to \"\"."
+    },
+    "description": {
+      "type": "string",
+      "description": "Extra searchable text. Indexed for search but not rendered in the row."
     },
     "priority": {
       "type": "number",
-      "description": "Sort weight. Lower numbers sort higher (appear nearer the top). Negative values boost prominence; an exact title match forces -10000000. Defaults to 0."
+      "description": "Sort weight; lower sorts higher. An exact title match forces -10000000. Defaults to 0."
     },
     "context": {
-      "description": "Visibility scope. A single string or an array of strings. '*' (the default) means the option is available in every context. Other common values: 'CMS', 'HAX', 'admin', 'logged-in', '>' (developer mode). An option only appears when the active commandContext intersects its context list.",
+      "description": "Where the option is visible: `*` (default) everywhere, or one or more context names. Common: `CMS`, `HAX`, `admin`, `logged-in`, `community`, `>` (developer mode), `/` (program list). Platform feature names (`addPage`, `uploadMedia`, `outlineDesigner`, ...) are also used as contexts so options disappear when HAXcms platform settings disable that feature. Prefer an array: a string context is matched with String.includes, i.e. by substring.",
       "oneOf": [
-        { "type": "string" },
-        { "type": "array", "items": { "type": "string" } }
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1
+        }
+      ],
+      "examples": [
+        "*",
+        "CMS",
+        "HAX",
+        "admin",
+        "logged-in",
+        "community",
+        ">",
+        "/",
+        "addPage",
+        "uploadMedia",
+        "outlineDesigner"
       ]
     },
     "voice": {
       "type": "string",
-      "description": "Voice-command phrase pattern for the hal-9000 speech layer, e.g. '(toggle) dark mode'. Parenthesized segments are optional words. Falls back to `title` when omitted."
+      "description": "Voice phrase pattern for the hal-9000 layer, e.g. `(toggle) dark mode` (parenthesized words optional). Falls back to `title`."
     },
     "more": {
-      "description": "Extra detail rendered in an expandable details section of the row. In the runtime this is a lit-html TemplateResult, so it is not JSON-typed here; treat as freeform renderable content."
+      "description": "Extra detail rendered in an expandable section of the row (a lit TemplateResult at runtime). Only plain strings are added to the search index."
     },
     "inline": {
       "type": "boolean",
-      "description": "When true, the option is eligible to appear in inline (mini) mode. Defaults to false."
+      "description": "Also list this option when Merlin is invoked inline (slash in an empty block, `::` token, RTE toolbar). Defaults to false."
+    },
+    "inlineOnly": {
+      "type": "boolean",
+      "description": "List this option ONLY when Merlin is invoked inline; it never appears in global browse/search. Implies `inline`, so do not set both."
     },
     "hidden": {
       "type": "boolean",
-      "description": "When true, the option is registered and invokable by machineName/shortcut but excluded from browse/search results. Used for dedicated-shortcut-only commands (e.g. emoji/symbol pickers)."
+      "description": "Keep the option registered (invokable by machineName / shortcut via runProgram or waveWand) but never list it in browse/search."
+    },
+    "externalLink": {
+      "type": "boolean",
+      "description": "Render an open-in-new-window icon on the row because selecting it opens an external site."
     },
     "shortcut": {
-      "description": "Optional keyboard-shortcut metadata linking this option to the shared KeyboardShortcutManager registry. May be a registry id string (e.g. 'cms-save') that resolves to a previously-registered descriptor, OR an inline descriptor object with the canonical shape { id, type: 'binding'|'markdown', key, ctrl, shift, alt, meta, trigger, tag, content, description, context, allowInInput, callback, condition, eventName }. When present, defineOption() resolves a human-readable label onto shortcutLabel. Both shortcut and shortcutLabel are excluded from the search index.",
+      "description": "Links the option to the shared KeyboardShortcutManager registry: a registered descriptor id (e.g. `cms-save`) or an inline descriptor. defineOption() resolves it to `shortcutLabel`. Not part of the search index.",
       "oneOf": [
-        { "type": "string" },
-        { "type": "object" }
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "$ref": "#/$defs/shortcutDescriptor"
+        }
       ]
-    },
-    "index": {
-      "type": "string",
-      "description": "AUTO-BUILT by defineOption() — do not set this yourself. A space-joined, de-duplicated, lowercased search index derived from tags/path/title/voice/more/context plus the full path phrase."
     },
     "shortcutLabel": {
       "type": "string",
-      "description": "AUTO-BUILT by defineOption() from the shortcut field — do not set this yourself. The human-readable label resolved via KeyboardShortcutManager.getLabel() (e.g. 'Ctrl⇧S' for a binding, '###' for a markdown trigger). Empty string when no label resolves."
+      "description": "Keyboard hint rendered on the row (e.g. `Ctrl⇧S`, `###`). defineOption() computes it from `shortcut`, so do not set it on registered options. Rows returned by a Program are NOT passed through defineOption, so set it yourself there if you want a hint."
+    },
+    "index": {
+      "type": "string",
+      "description": "Search index built by defineOption() from the option's string/array fields. Never set it yourself."
     }
   },
-  "additionalProperties": false
+  "patternProperties": {
+    "^x-": {
+      "description": "Extension key for tool-specific data. String values are added to the search index."
+    },
+    "^\\$comment": {
+      "description": "Annotation for JSON examples; not used at runtime."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "eventName": {
+            "const": "super-daemon-element-method"
+          }
+        },
+        "required": [
+          "eventName"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "$ref": "#/$defs/elementMethodValue"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventName": {
+            "const": "super-daemon-element-click"
+          }
+        },
+        "required": [
+          "eventName"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "$ref": "#/$defs/elementClickValue"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventName": {
+            "const": "super-daemon-run-program"
+          }
+        },
+        "required": [
+          "eventName"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "$ref": "#/$defs/programValue"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventName": {
+            "const": "hax-super-daemon-insert-tag"
+          }
+        },
+        "required": [
+          "eventName"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "$ref": "#/$defs/insertTagValue"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "eventName": {
+            "const": "execute-keyboard-shortcut"
+          }
+        },
+        "required": [
+          "eventName"
+        ]
+      },
+      "then": {
+        "properties": {
+          "value": {
+            "$ref": "#/$defs/keyboardShortcutValue"
+          }
+        }
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "inline",
+          "inlineOnly"
+        ],
+        "properties": {
+          "inline": {
+            "const": true
+          },
+          "inlineOnly": {
+            "const": true
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "elementMethodValue": {
+      "type": "object",
+      "required": [
+        "target",
+        "method"
+      ],
+      "description": "super-daemon calls `value.target[value.method](...value.args)`.",
+      "properties": {
+        "target": {
+          "description": "Object or element whose method is called (`this`, `globalThis`, an element)."
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "description": "Arguments spread into the call."
+        }
+      },
+      "patternProperties": {
+        "^\\$comment": {}
+      },
+      "additionalProperties": false
+    },
+    "elementClickValue": {
+      "type": "object",
+      "required": [
+        "target"
+      ],
+      "description": "super-daemon dispatches a synthetic click on `value.target`.",
+      "properties": {
+        "target": {
+          "description": "Element to click."
+        }
+      },
+      "patternProperties": {
+        "^\\$comment": {}
+      },
+      "additionalProperties": false
+    },
+    "programValue": {
+      "type": "object",
+      "required": [
+        "name",
+        "program"
+      ],
+      "description": "Handed to runProgram(); Merlin enters program mode. The WHOLE value object is also passed to the program as its second argument (`values`), so extra keys are allowed and are how a program receives data (for example `index` / `detail` in HAXStore's app-search programs).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Program-mode title."
+        },
+        "program": {
+          "description": "`async (input, values) => MerlinOption[]`, re-run (debounced ~150ms) on every keystroke. A descriptive string in JSON examples."
+        },
+        "machineName": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$",
+          "description": "Stable id so runProgram(like, context, values, 'machine-name') / waveWand can launch it without a function reference. Required for `hidden` / `inlineOnly` programs."
+        },
+        "context": {
+          "type": "string",
+          "description": "Command context (a single string) activated while the program runs, e.g. `CMS`, `/`, `>`. Not an array: runProgram() assigns it directly to commandContext.",
+          "minLength": 1
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "Search input placeholder while the program runs."
+        },
+        "initialValue": {
+          "description": "`async (values) => string`; a non-empty result pre-fills the search input when the program is launched with no explicit like/search. Currently only honored when the program is launched by machineName (runProgram(null, ctx, values, 'machine-name')); selecting the row from Merlin search skips it (fix proposed in haxtheweb/webcomponents)."
+        }
+      },
+      "patternProperties": {
+        "^\\$comment": {},
+        "^_example": {
+          "description": "Documentation-only sample in JSON examples."
+        }
+      },
+      "additionalProperties": true
+    },
+    "insertTagValue": {
+      "type": "object",
+      "description": "Handled by HAXStore._superDaemonInsert: fills the active program target with properties.src/source/href if one is waiting, otherwise inserts through the HAX tray like a block click.",
+      "properties": {
+        "value": {
+          "type": "string",
+          "description": "Tag to insert."
+        },
+        "eventName": {
+          "type": "string",
+          "description": "Tray event, usually `insert-tag`."
+        },
+        "demoSchema": {
+          "type": "boolean",
+          "description": "true = insert the element's first demoSchema entry."
+        },
+        "properties": {
+          "type": "object"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "keyboardShortcutValue": {
+      "type": "object",
+      "required": [
+        "shortcutId"
+      ],
+      "description": "haxcms-site-editor-ui looks the id up in KeyboardShortcutManager and runs it.",
+      "properties": {
+        "shortcutId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "shortcutDescriptor": {
+      "type": "object",
+      "description": "KeyboardShortcutManager descriptor (webcomponents elements/utils/lib/keyboardShortcuts.js). `type` defaults to `binding`; `id` defaults to the binding combo (e.g. `Ctrl+Shift+S`) or `markdown-<trigger>`.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "binding",
+            "markdown"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "description": "binding: key name."
+        },
+        "ctrl": {
+          "type": "boolean"
+        },
+        "shift": {
+          "type": "boolean"
+        },
+        "alt": {
+          "type": "boolean"
+        },
+        "meta": {
+          "type": "boolean"
+        },
+        "trigger": {
+          "type": "string",
+          "description": "markdown: typed text that triggers the insert."
+        },
+        "tag": {
+          "type": "string",
+          "description": "markdown: tag to insert."
+        },
+        "content": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string",
+          "examples": [
+            "edit",
+            "view",
+            "global"
+          ]
+        },
+        "allowInInput": {
+          "type": "boolean"
+        },
+        "callback": {
+          "description": "JS function (binding)."
+        },
+        "condition": {
+          "description": "JS function returning whether the binding is active."
+        },
+        "eventName": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "markdown"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "required": [
+              "trigger"
+            ]
+          },
+          "else": {
+            "required": [
+              "key"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": false
+    }
+  }
 }

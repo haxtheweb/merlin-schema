@@ -1,0 +1,22 @@
+{
+  "title": "Insert emoji",
+  "icon": "editor:insert-emoticon",
+  "tags": ["emoji"],
+  "inlineOnly": true,
+  "shortcut": {
+    "id": "inline-emoji",
+    "type": "markdown",
+    "trigger": "::",
+    "description": "Insert emoji (inline token)"
+  },
+  "path": "HAX/insert/emoji",
+  "context": ["HAX"],
+  "eventName": "super-daemon-run-program",
+  "value": {
+    "name": "Insert emoji",
+    "machineName": "insert-emoji",
+    "context": "HAX",
+    "placeholder": "Search emoji",
+    "program": "async (input, values) => emojiRows(input)"
+  }
+}
