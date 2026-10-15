@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Missing method",
+    "icon": "icons:warning",
+    "tags": [],
+    "path": "x",
+    "context": ["CMS"],
+    "eventName": "super-daemon-element-method",
+    "value": { "target": "this", "methd": "_save" }
+  },
+  {
+    "title": "Program with array context and both inline flags",
+    "icon": "icons:warning",
+    "inline": true,
+    "inlineOnly": true,
+    "hidden": true,
+    "contexts": ["CMS"],
+    "eventName": "super-daemon-run-program",
+    "value": { "name": "Broken", "context": ["CMS"], "program": "async () => []" }
+  },
+  {
+    "title": "Markdown shortcut without trigger",
+    "icon": "icons:warning",
+    "shortcut": { "type": "markdown", "tag": "h3" },
+    "index": "hand built index",
+    "context": ["HAX"],
+    "eventName": "execute-keyboard-shortcut",
+    "value": {}
+  }
+]

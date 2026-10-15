@@ -1,92 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://haxtheweb.org/schemas/merlin-program.schema.json",
+  "$id": "https://raw.githubusercontent.com/haxtheweb/merlin-schema/main/merlin-program.schema.json",
   "title": "MerlinProgram",
-  "description": "A dynamic, search-driven Merlin command. A Program is an Option whose `eventName` is 'super-daemon-run-program' and whose `value.program` is an async function `(input, values) => Promise<MerlinOption[]>`. When selected, Merlin switches into program mode: the program function is invoked with the current search text, and its returned array of Option-shaped rows replaces the top-level result list. The function is re-invoked (debounced ~150ms) on every keystroke. Programs are commonly lazy-loaded via dynamic import() of a createXProgram(context) factory module. Because JSON Schema cannot type a JavaScript function, the `program` and `initialValue` fields are documented here as descriptive strings; the README is authoritative for their callable signatures.",
-  "type": "object",
-  "required": ["title", "eventName", "value"],
-  "properties": {
-    "title": {
-      "type": "string",
-      "description": "Display label of the Program's entry row in the top-level list (the row that, when selected, launches program mode)."
-    },
-    "eventName": {
-      "type": "string",
-      "const": "super-daemon-run-program",
-      "description": "Must be the literal 'super-daemon-run-program' for a Program."
-    },
-    "icon": { "type": "string", "description": "Icon name for the entry row." },
-    "image": { "type": "string", "description": "Image URL for the entry row." },
-    "textCharacter": { "type": "string", "description": "Emoji/character for the entry row." },
-    "tags": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Searchable tags for the entry row."
-    },
-    "path": {
-      "type": "string",
-      "description": "Breadcrumb path for the entry row (e.g. 'CMS/export/site')."
-    },
-    "priority": { "type": "number", "description": "Sort weight of the entry row in the top-level list." },
-    "context": {
-      "description": "Visibility scope for the entry row, same semantics as MerlinOption.context.",
-      "oneOf": [
-        { "type": "string" },
-        { "type": "array", "items": { "type": "string" } }
-      ]
-    },
-    "voice": {
-      "type": "string",
-      "description": "Voice-command phrase pattern that launches the program (e.g. 'export site')."
-    },
-    "more": { "description": "Extra detail for the entry row (lit-html TemplateResult at runtime)." },
-    "shortcut": {
-      "description": "Optional keyboard-shortcut metadata for the entry row, linking it to the shared KeyboardShortcutManager registry. May be a registry id string (e.g. 'cms-save') or an inline descriptor object (canonical shape documented in merlin-option.schema.json and the README). defineOption() resolves the label onto shortcutLabel; both fields are excluded from the search index.",
-      "oneOf": [
-        { "type": "string" },
-        { "type": "object" }
-      ]
-    },
-    "value": {
-      "type": "object",
-      "description": "Program payload. Required keys: name and program. Optional: machineName, context, placeholder, initialValue.",
-      "required": ["name", "program"],
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "Human-readable name shown as the program-mode title while the program is active."
-        },
-        "program": {
-          "type": "string",
-          "description": "CALLABLE — not a string at runtime. Async function with signature `async (input: string, values: object) => Promise<MerlinOption[]>`. `input` is the current search text; `values` is the bag passed into runProgram(). Each returned item is an Option-shaped row rendered by super-daemon-row. JSON Schema cannot express a function type, so this is documented as a descriptive placeholder string."
-        },
-        "machineName": {
-          "type": "string",
-          "description": "Stable identifier enabling runProgram('like', context, values, 'machineName') to resolve and invoke this program by name without holding a direct function reference."
-        },
-        "context": {
-          "type": "string",
-          "description": "Command context to activate when the program launches (e.g. 'CMS' or '>')."
-        },
-        "placeholder": {
-          "type": "string",
-          "description": "Placeholder text for the search input while the program is active (e.g. 'Enter new title')."
-        },
-        "initialValue": {
-          "type": "string",
-          "description": "CALLABLE — not a string at runtime. Optional async function with signature `async (values: object) => Promise<string>` whose non-empty string return pre-fills the search input when the program is launched generically (e.g. with no explicit like/search). Used by EditTagsProgram to pre-fill the active page's current tags."
-        }
-      },
-      "additionalProperties": true
-    },
-    "index": {
-      "type": "string",
-      "description": "AUTO-BUILT by defineOption() — do not set manually."
-    },
-    "shortcutLabel": {
-      "type": "string",
-      "description": "AUTO-BUILT by defineOption() from the shortcut field — do not set this yourself. Human-readable label from KeyboardShortcutManager.getLabel() (e.g. 'Ctrl⇧S'); empty string when none resolves."
+  "description": "A dynamic, search-driven Merlin command: a MerlinOption whose `eventName` is `super-daemon-run-program`. Selecting its row enters program mode; `value.program(input, values)` is re-run (debounced ~150ms) on every keystroke and the MerlinOption rows it returns replace the list. Programs are usually lazy-loaded via a dynamic import() of a createXProgram(context) factory. All option fields and the program `value` shape come from merlin-option.schema.json.",
+  "allOf": [
+    {
+      "$ref": "merlin-option.schema.json"
     }
-  },
-  "additionalProperties": false
+  ],
+  "required": [
+    "eventName",
+    "value"
+  ],
+  "properties": {
+    "eventName": {
+      "const": "super-daemon-run-program"
+    }
+  }
 }

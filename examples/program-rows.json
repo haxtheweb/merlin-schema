@@ -1,0 +1,32 @@
+[
+  {
+    "title": "Save tags: physics, lab",
+    "icon": "icons:check",
+    "tags": ["confirm", "save"],
+    "path": "CMS/edit/tags/confirm",
+    "eventName": "super-daemon-element-method",
+    "value": {
+      "target": "globalThis",
+      "method": "dispatchEvent",
+      "args": ["new CustomEvent('haxcms-save-node-details', { detail: { operation: 'setTags', tags: 'physics, lab' } })"]
+    }
+  },
+  {
+    "title": "Ctrl+Shift+S: Save page",
+    "icon": "hardware:keyboard",
+    "tags": ["shortcut", "keyboard"],
+    "shortcutLabel": "Ctrl⇧S",
+    "path": "CMS/help/keyboard-shortcuts",
+    "context": ["CMS"],
+    "eventName": "execute-keyboard-shortcut",
+    "value": { "shortcutId": "cms-save" }
+  },
+  {
+    "title": "No tags set",
+    "icon": "icons:info",
+    "tags": ["empty"],
+    "path": "CMS/edit/tags/empty",
+    "eventName": "disabled",
+    "value": { "disabled": true }
+  }
+]

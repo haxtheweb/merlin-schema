@@ -28,11 +28,44 @@ This repo is **documentation only**. The code that consumes this schema lives in
 
 | File | Purpose |
 |------|---------|
-| `merlin-option.schema.json` | Formal JSON Schema (draft 2020-12) for the base **Option** object. |
-| `merlin-program.schema.json` | Formal JSON Schema for the **Program** variant. |
-| `example-option.json` | Annotated real-world Option example. |
-| `example-program.json` | Annotated real-world Program example. |
+| `merlin-option.schema.json` | Formal JSON Schema (draft 2020-12) for an **Option**, including the `value` shape for each known `eventName`. |
+| `merlin-program.schema.json` | The **Program** variant (an Option with `eventName: "super-daemon-run-program"`). |
+| `scripts/validate.js` | Validator for JSON examples **and** a `--scan` mode that statically checks `defineOption()` calls and Program result rows in JS source. |
+| `example-option.json`, `example-program.json` | Annotated real-world examples. |
+| `examples/` | More examples (element-click, insert-tag, inline-only program, program rows) plus `invalid/` and a JS `scan/` fixture. |
 | `AGENTS.md` | Short pointer for AI agents. |
+
+## Validation
+
+Merlin options are JS objects in source files, so the most useful check is the static scan:
+
+```bash
+npx -p @haxtheweb/merlin-schema merlin-validate --scan elements/my-element/my-element.js
+```
+
+`--scan` validates every `*.defineOption({...})` object literal as a registered option and every other object literal with `title` + `eventName` + `value` as a Program result row. Values that are not literals (`this.t.save`, function references, lit templates) are accepted as-is; literal values, keys and `value` shapes are checked. JSON files (like the examples) are validated without `--scan`; add `--rows` for arrays of Program result rows and `--json` for a structured report.
+
+From a clone:
+
+```bash
+npm install
+node scripts/validate.js example-option.json example-program.json
+node scripts/validate.js --rows examples/program-rows.json
+node scripts/validate.js --scan path/to/file.js
+npm test
+```
+
+Across the webcomponents monorepo the scan checks 174 options and rows. It reports 3 real problems (array `value.context` in haxcms-site-editor-ui) plus 38 advisory warnings for string contexts.
+
+## Rules for tools and agents registering Merlin commands
+
+1. **Required:** `title`, `value`, `eventName`. `defineOption()` silently ignores options missing any of them.
+2. **Match `value` to `eventName`:** `{target, method, args?}` for `super-daemon-element-method`, `{target}` for `super-daemon-element-click`, `{name, program, ...}` for `super-daemon-run-program`, `{shortcutId}` for `execute-keyboard-shortcut`. See the [Event contract](#event-contract).
+3. **Use arrays for `context`** (`["CMS"]`). A string context is matched with `String.includes`, so it matches by substring. Program `value.context` is the opposite: one string, because it becomes the active command context.
+4. **Never set `index`**, and don't set `shortcutLabel` on registered options: `defineOption()` builds both. Program result rows skip `defineOption()`, so set `shortcutLabel` there yourself if you want a key hint.
+5. **Pick `inline` or `inlineOnly`, not both.** `hidden` and `inlineOnly` programs need a `machineName`, because that's the only way to launch them.
+6. **No unknown keys.** Custom keys must start with `x-`, and remember every string field (including `x-` ones) goes into the search index.
+7. **Scan before you finish:** `merlin-validate --scan <file>`.
 
 ---
 
@@ -82,15 +115,18 @@ Required fields: `title`, `value`, `eventName`.
 | `textCharacter` | string | no | — | A single character or emoji rendered as an alternative to icon/image (e.g. `"🍌"`). |
 | `tags` | string[] | no | `[]` | Searchable keyword tags. Also rendered as `simple-tag` chips in the row. |
 | `path` | string | no | `""` | Breadcrumb-style location string (e.g. `"CMS/admin/seo"`). Searchable as a whole phrase *and* split on `/`. |
+| `description` | string | no | — | Extra searchable text. Indexed for search but not rendered. |
 | `priority` | number | no | `0` | Sort weight. **Lower** numbers sort higher (appear nearer the top). Negative values boost prominence. An exact title match forces `-10000000`. |
-| `context` | string \| string[] | no | `"*"` | Visibility scope. `"*"` = available in every context. Other common values: `"CMS"`, `"HAX"`, `"admin"`, `"logged-in"`, `">"` (developer mode). |
+| `context` | string \| string[] | no | `"*"` | Visibility scope. `"*"` = available in every context. Other common values: `"CMS"`, `"HAX"`, `"admin"`, `"logged-in"`, `"community"`, `">"` (developer mode), `"/"` (program list), and platform feature names (`"addPage"`, `"uploadMedia"`, `"outlineDesigner"`) that disappear when HAXcms platform settings disable the feature. Prefer an array; a string is matched by substring. |
 | `voice` | string | no | falls back to `title` | Voice-command phrase pattern for the `hal-9000` speech layer, e.g. `"(toggle) dark mode"`. Parenthesized segments are optional words. |
-| `more` | lit-html TemplateResult | no | — | Extra detail rendered in an expandable `<details>` section of the row. |
-| `inline` | boolean | no | `false` | When true, the option is eligible to appear in inline (mini) mode. |
+| `more` | lit-html TemplateResult | no | — | Extra detail rendered in an expandable `<details>` section of the row. Only a plain string `more` is added to the search index. |
+| `inline` | boolean | no | `false` | Also list the option when Merlin is invoked inline (slash in an empty block, `::` token, RTE toolbar button). |
+| `inlineOnly` | boolean | no | `false` | List the option **only** when Merlin is invoked inline; never in global browse/search. Implies `inline`, so don't set both. |
+| `externalLink` | boolean | no | `false` | Renders an open-in-new-window icon on the row (the option opens an external site). |
 | `hidden` | boolean | no | — | When true, the option is registered and invokable by `machineName`/shortcut but excluded from browse/search results. |
 | `shortcut` | string \| object | no | — | Keyboard-shortcut metadata linking the option to the shared `KeyboardShortcutManager` registry. Either a registry id string (e.g. `"cms-save"`) or an inline descriptor object (see Shortcut metadata). Resolved to `shortcutLabel`; both excluded from the search index. |
 | `index` | string | auto | — | **AUTO-BUILT by `defineOption()` — do not set this yourself.** A space-joined, de-duplicated, lowercased search index derived from `tags`/`path`/`title`/`voice`/`more`/`context` plus the full path phrase. |
-| `shortcutLabel` | string | auto | — | **AUTO-BUILT by `defineOption()` from `shortcut` — do not set this yourself.** Human-readable label from `KeyboardShortcutManager.getLabel()` (e.g. `"Ctrl⇧S"` for a binding, `"###"` for a markdown trigger); empty string when none resolves. |
+| `shortcutLabel` | string | auto | — | **AUTO-BUILT by `defineOption()` from `shortcut` — do not set this on registered options.** Human-readable label from `KeyboardShortcutManager.getLabel()` (e.g. `"Ctrl⇧S"`, `"###"`). Program result rows are not passed through `defineOption()`, so a row that wants a key hint sets it directly. |
 
 ---
 
@@ -103,9 +139,11 @@ A Program is an Option with `eventName: "super-daemon-run-program"` and a `value
 | `name` | string | yes | Human-readable name shown as the program-mode title while the program is active. |
 | `program` | `async (input, values) => Promise<Option[]>` | yes | The search function. `input` is the current search text; `values` is the bag passed into `runProgram()`. Each returned item is an Option-shaped row rendered by `super-daemon-row`. Re-invoked (debounced ~150ms) on every keystroke. |
 | `machineName` | string | no | Stable identifier enabling `runProgram('like', context, values, 'machineName')` to resolve and invoke this program by name without holding a direct function reference. |
-| `context` | string | no | Command context to activate when the program launches (e.g. `"CMS"` or `">"`). |
+| `context` | string | no | Command context to activate when the program launches (e.g. `"CMS"` or `">"`). A single string, not an array: `runProgram()` assigns it straight to `commandContext`. |
 | `placeholder` | string | no | Placeholder text for the search input while the program is active (e.g. `"Enter new title"`). |
-| `initialValue` | `async (values) => Promise<string>` | no | Optional prefill. When the program is launched generically (no explicit like/search), a non-empty string return pre-fills the search input. Used by `EditTagsProgram` to pre-fill the active page's current tags. |
+| `initialValue` | `async (values) => Promise<string>` | no | Optional prefill: a non-empty string return pre-fills the search input when the program is launched with no explicit like/search. **Currently only honored when the program is launched by `machineName`** (`runProgram(null, ctx, values, "edit-tags")`); selecting the row from Merlin search passes the function directly and skips it (fix proposed in haxtheweb/webcomponents). |
+
+The **whole `value` object is also the program's second argument** (`values`), so any extra keys you put on `value` reach the program. HAXStore's app-search programs pass `index` and `detail` this way.
 
 ### The lazy factory pattern
 
@@ -198,7 +236,11 @@ The `super-daemon` singleton listens for these events globally and routes them:
 | `super-daemon-element-method` | Calls `value.target[value.method](...value.args)` | yes |
 | `super-daemon-element-click` | Dispatches a synthetic `MouseEvent("click")` on `value.target` | yes |
 | `super-daemon-run-program` | Hands `value` to `runProgram()` — enters program mode | **no** (stays open) |
+| `hax-super-daemon-insert-tag` | HAXStore inserts a block: fills a waiting program target with `properties.src/source/href`, otherwise inserts through the tray (`value`: `{ value: tag, eventName: "insert-tag", demoSchema: true }` or `{ properties, content }`) | yes |
+| `execute-keyboard-shortcut` | `haxcms-site-editor-ui` resolves `value.shortcutId` in `KeyboardShortcutManager` and runs it | yes |
 | `disabled` | No-op. Used for informational rows like "No active page found" | yes |
+| `super-daemon-noop` | No-op instruction row (no listener) | yes |
+| anything else | Dispatched as a plain `CustomEvent`; you need your own listener | yes |
 
 Other events the singleton listens for (dispatch these to drive Merlin from code):
 
@@ -495,7 +537,7 @@ export const createEditTagsProgram = (context) => {
 1. The user opens Merlin (`Alt+Shift`) and types `edit tags` (or says "edit tags").
 2. The `Update page tags` entry row appears in the filtered list.
 3. The user selects it. `super-daemon-row` dispatches `super-daemon-run-program` with `detail.value` — the runtime calls `runProgram()` which enters program mode.
-4. Because no explicit `like`/`search` was supplied, `runProgram` calls `value.initialValue(values)` to pre-fill the input with the active page's current tags (e.g. `"physics, lab"`).
+4. Intended: because no explicit `like`/`search` was supplied, `runProgram` calls `value.initialValue(values)` to pre-fill the input with the active page's current tags (e.g. `"physics, lab"`). Today this only happens when the program is launched by `machineName`; launching from the search row skips `initialValue` until the webcomponents fix lands.
 5. The `program` function runs with that pre-filled input and returns a `Save tags: physics, lab` row (plus a `Clear all tags` row).
 6. The user edits the text. Each keystroke is debounced ~150ms, then `program` re-runs with the new input and the results live-update.
 7. The user selects `Save tags: ...`. `super-daemon-row` dispatches `super-daemon-element-method`, the runtime calls `globalThis.dispatchEvent(CustomEvent("haxcms-save-node-details", ...))`, the tags are saved, and the palette closes (because the event was not `super-daemon-run-program`).

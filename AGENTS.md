@@ -9,6 +9,14 @@ This repository documents the **schema / contract** for **Merlin** — the comma
 - `merlin-program.schema.json` — formal JSON Schema for a Merlin **Program** (a dynamic, search-driven command).
 - `example-option.json` — an annotated real-world Option.
 - `example-program.json` — an annotated real-world Program.
+- `examples/` — more examples, `invalid/` fixtures and a JS `scan/` fixture.
+- `scripts/validate.js` — validator. Use `--scan <file.js>` on any source file that registers Merlin options (statically checks `defineOption()` calls and Program result rows); plain mode validates JSON examples.
+
+## Before you finish
+
+- Read "Rules for tools and agents registering Merlin commands" in README.md.
+- Run `node scripts/validate.js --scan <changed .js files>` (or `npx -p @haxtheweb/merlin-schema merlin-validate --scan ...`).
+- Changing the schema or README here means `npm test` must pass and an example must cover the change.
 
 ## Where the runtime implementation lives
 
