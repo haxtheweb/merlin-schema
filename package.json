@@ -1,11 +1,24 @@
 {
   "name": "@haxtheweb/merlin-schema",
-  "version": "0.1.0",
+  "version": "26.8.1",
   "description": "JSON Schemas and a validator (JSON + static JS scan) for Merlin / super-daemon options and programs",
-  "keywords": ["hax", "haxtheweb", "merlin", "super-daemon", "command-palette", "json-schema", "validator"],
+  "keywords": [
+    "hax",
+    "haxtheweb",
+    "merlin",
+    "super-daemon",
+    "command-palette",
+    "json-schema",
+    "validator"
+  ],
   "homepage": "https://github.com/haxtheweb/merlin-schema#readme",
-  "bugs": { "url": "https://github.com/haxtheweb/issues/issues" },
-  "repository": { "type": "git", "url": "git+https://github.com/haxtheweb/merlin-schema.git" },
+  "bugs": {
+    "url": "https://github.com/haxtheweb/issues/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haxtheweb/merlin-schema.git"
+  },
   "license": "Apache-2.0",
   "main": "scripts/validate.js",
   "exports": {
@@ -14,17 +27,34 @@
     "./merlin-program.schema.json": "./merlin-program.schema.json",
     "./package.json": "./package.json"
   },
-  "bin": { "merlin-validate": "scripts/validate.js" },
-  "files": ["merlin-option.schema.json", "merlin-program.schema.json", "scripts/validate.js", "example-option.json", "example-program.json", "examples/"],
-  "engines": { "node": ">=18" },
+  "bin": {
+    "merlin-validate": "scripts/validate.js"
+  },
+  "files": [
+    "merlin-option.schema.json",
+    "merlin-program.schema.json",
+    "scripts/validate.js",
+    "example-option.json",
+    "example-program.json",
+    "examples/"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "validate": "node scripts/validate.js",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "release": "npm test && commit-and-tag-version && git push --follow-tags origin main && npm publish"
   },
   "dependencies": {
     "acorn": "^8.12.1",
     "acorn-walk": "^8.3.4",
     "ajv": "^8.17.1"
   },
-  "publishConfig": { "access": "public" }
+  "devDependencies": {
+    "commit-and-tag-version": "12.7.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

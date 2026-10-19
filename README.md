@@ -547,3 +547,7 @@ export const createEditTagsProgram = (context) => {
 ## License
 
 [Apache-2.0](LICENSE)
+
+## Releasing
+
+This package is versioned with the rest of the HAX ecosystem and is published by the ubiquity release (`scripts/ubiquity-push.sh` in haxtheweb/webcomponents), which runs `commit-and-tag-version --release-as <ecosystem version>`, pushes the tag and runs `npm publish`. To cut a release of just this package, run `npm run release` (tests, bumps the version and CHANGELOG, tags, pushes to `main`, publishes).
