@@ -1,0 +1,173 @@
+id: item-5861a757-2f3e-4f38-a7c3-c20c51e52c46
+indent: 0
+location: pages/item-5861a757-2f3e-4f38-a7c3-c20c51e52c46/index.yaml
+slug: option-schema-reference
+order: 1
+parent: null
+title: Option Schema Reference
+description: ''
+metadata:
+  created: 1793383089
+  updated: 1793383089
+  images: []
+  videos: []
+content: >-
+  <p>Required fields: <code>title</code>, <code>value</code>,
+  <code>eventName</code>.</p>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Required fields</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>title</strong> (string) — Primary display label. Used for
+  alphabetical sort and exact-match priority boosting.</li>
+
+  <li><strong>value</strong> (object) — Payload dispatched as the
+  <code>detail</code> of the CustomEvent named by <code>eventName</code>. Shape
+  varies by <code>eventName</code>.</li>
+
+  <li><strong>eventName</strong> (string) — Name of the CustomEvent dispatched
+  when the row is selected.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Display and search fields</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>icon</strong> (string, optional) — Icon name (e.g.
+  <code>"icons:save"</code>, <code>"hax:wizard-hat"</code>) rendered by
+  <code>simple-icon-lite</code>.</li>
+
+  <li><strong>image</strong> (string, optional) — Image URL rendered in the row
+  as an alternative to <code>icon</code>.</li>
+
+  <li><strong>textCharacter</strong> (string, optional) — A single character or
+  emoji rendered as an alternative to icon/image (e.g. <code>"🍌"</code>).</li>
+
+  <li><strong>tags</strong> (string[], optional, default <code>[]</code>) —
+  Searchable keyword tags. Also rendered as <code>simple-tag</code> chips in the
+  row.</li>
+
+  <li><strong>path</strong> (string, optional, default <code>""</code>) —
+  Breadcrumb-style location string (e.g. <code>"CMS/admin/seo"</code>).
+  Searchable as a whole phrase and split on <code>/</code>.</li>
+
+  <li><strong>description</strong> (string, optional) — Extra searchable text.
+  Indexed for search but not rendered.</li>
+
+  <li><strong>priority</strong> (number, optional, default <code>0</code>) —
+  Sort weight. Lower numbers sort higher. Negative values boost prominence. An
+  exact title match forces <code>-10000000</code>.</li>
+
+  <li><strong>more</strong> (lit-html TemplateResult, optional) — Extra detail
+  rendered in an expandable <code>&lt;details&gt;</code> section of the row.
+  Only a plain string <code>more</code> is added to the search index.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Visibility and behavior fields</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>context</strong> (string | string[], optional, default
+  <code>"*"</code>) — Visibility scope. <code>"*"</code> means available in
+  every context. Other common values: <code>"CMS"</code>, <code>"HAX"</code>,
+  <code>"admin"</code>, <code>"logged-in"</code>, <code>"community"</code>,
+  <code>"&gt;"</code> (developer mode), <code>"/"</code> (program list), and
+  platform feature names (<code>"addPage"</code>, <code>"uploadMedia"</code>,
+  <code>"outlineDesigner"</code>) that disappear when HAXcms platform settings
+  disable the feature. Prefer an array; a string is matched by substring.</li>
+
+  <li><strong>inline</strong> (boolean, optional, default <code>false</code>) —
+  Also list the option when Merlin is invoked inline (slash in an empty block,
+  <code>::</code> token, RTE toolbar button).</li>
+
+  <li><strong>inlineOnly</strong> (boolean, optional, default
+  <code>false</code>) — List the option only when Merlin is invoked inline;
+  never in global browse/search. Implies <code>inline</code>, so don't set
+  both.</li>
+
+  <li><strong>externalLink</strong> (boolean, optional, default
+  <code>false</code>) — Renders an open-in-new-window icon on the row (the
+  option opens an external site).</li>
+
+  <li><strong>hidden</strong> (boolean, optional) — When true, the option is
+  registered and invokable by <code>machineName</code>/shortcut but excluded
+  from browse/search results.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Voice and shortcut fields</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>voice</strong> (string, optional, falls back to
+  <code>title</code>) — Voice-command phrase pattern for the
+  <code>hal-9000</code> speech layer, e.g. <code>"(toggle) dark mode"</code>.
+  Parenthesized segments are optional words.</li>
+
+  <li><strong>shortcut</strong> (string | object, optional) — Keyboard-shortcut
+  metadata linking the option to the shared <code>KeyboardShortcutManager</code>
+  registry. Either a registry id string (e.g. <code>"cms-save"</code>) or an
+  inline descriptor object. Resolved to <code>shortcutLabel</code>; both
+  excluded from the search index.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Auto-built fields (do not set yourself)</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>index</strong> (string, auto) — A space-joined, de-duplicated,
+  lowercased search index derived from
+  <code>tags</code>/<code>path</code>/<code>title</code>/<code>voice</code>/<code>more</code>/<code>context</code>
+  plus the full path phrase.</li>
+
+  <li><strong>shortcutLabel</strong> (string, auto) — Human-readable label from
+  <code>KeyboardShortcutManager.getLabel()</code> (e.g. <code>"Ctrl⇧S"</code>,
+  <code>"###"</code>). Program result rows are not passed through
+  <code>defineOption()</code>, so a row that wants a key hint sets it
+  directly.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>

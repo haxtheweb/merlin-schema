@@ -1,0 +1,28 @@
+# Merlin Schema
+
+> Authoritative documentation for the Merlin command-palette and voice-assistant schema used across the HAX ecosystem.
+
+HAXcms is a file-based CMS: authored pages and metadata are stored as portable files, not locked into a database-only workflow.
+The canonical site structure is `site.json`, represented in JSON Outline Schema (`id`, `parent`, `order`, `slug`, `location`, and `metadata`).
+Use HAX CLI and ecosystem tooling to maintain human-authored content while keeping machine-readable outputs synchronized.
+Managed files (feeds, search indexes, manifests, and this `llms.txt`) are generated artifacts and should be rebuilt by tooling.
+
+## Core resources
+- [site.json](https://localhost/merlin-schema-docs/site.json): Canonical site manifest and navigation tree in JSON Outline Schema format.
+- [llms.txt](https://localhost/merlin-schema-docs/llms.txt): LLM-oriented guide to this site and its machine-readable resources.
+
+## Pages
+- [Overview](https://localhost/merlin-schema-docs/pages/item-6f07a522-e993-4c8c-b360-fe044ae2e4d2/index.md)
+- [Option Schema Reference](https://localhost/merlin-schema-docs/pages/item-5861a757-2f3e-4f38-a7c3-c20c51e52c46/index.md)
+- [Program Schema Reference](https://localhost/merlin-schema-docs/pages/item-a2189239-ca25-4a0f-88ea-8f36eeda8678/index.md)
+- [Event Contract & Context System](https://localhost/merlin-schema-docs/pages/item-11daea04-e197-4ace-94b1-e52fa8059257/index.md)
+- [Voice & Shortcut Metadata](https://localhost/merlin-schema-docs/pages/item-c02588da-ee36-4c30-94c4-4ac8f7b382af/index.md)
+- [Rules & Minimal Samples](https://localhost/merlin-schema-docs/pages/item-16547bb8-ca34-4622-a79f-582912f974b9/index.md)
+- [More Schemas](https://localhost/merlin-schema-docs/pages/item-fd6de181-9d47-4175-8a81-d0de3adcc517/index.md)
+
+## Optional
+- [Search index](https://localhost/merlin-schema-docs/lunrSearchIndex.json): Lunr corpus for quick full-text retrieval.
+- [RSS feed](https://localhost/merlin-schema-docs/rss.xml): Site updates in RSS format.
+- [Atom feed](https://localhost/merlin-schema-docs/atom.xml): Site updates in Atom format.
+- [Sitemap](https://localhost/merlin-schema-docs/sitemap.xml): URL-level discovery map for the published site.
+- [Agent skills](https://localhost/merlin-schema-docs/.well-known/agent-skills/index.json): Agent Skills discovery index (agentskills.io v0.2.0) listing skills that teach an agent how to read, author, audit, and remix this site.

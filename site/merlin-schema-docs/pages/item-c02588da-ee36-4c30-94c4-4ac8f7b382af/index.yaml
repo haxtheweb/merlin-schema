@@ -1,0 +1,90 @@
+id: item-c02588da-ee36-4c30-94c4-4ac8f7b382af
+indent: 0
+location: pages/item-c02588da-ee36-4c30-94c4-4ac8f7b382af/index.yaml
+slug: voice-shortcut-metadata
+order: 4
+parent: null
+title: Voice & Shortcut Metadata
+description: ''
+metadata:
+  created: 1793383110
+  updated: 1793383110
+  images: []
+  videos: []
+content: >-
+  <h2>Voice command layer (optional facet)</h2>
+
+  <p>When <code>voiceSearch</code> is enabled on the <code>super-daemon</code>
+  element, the <code>hal-9000</code> speech engine is loaded and Merlin's
+  commands become voice-addressable. Each Option can declare a
+  <code>voice</code> phrase pattern; if omitted, the <code>title</code> is used.
+  The pattern syntax uses parenthesized segments for optional words, e.g.
+  <code>"(toggle) dark mode"</code> matches both "toggle dark mode" and "dark
+  mode".</p>
+
+  <p>Voice commands are re-processed (<code>reprocessVoiceCommands()</code>)
+  whenever the visible item set changes (e.g. context switch), so only
+  currently-relevant options are voice-addressable. A built-in catch-all
+  (<code>"*anything"</code>) routes unrecognized speech into the search
+  input.</p>
+
+  <p>This layer is optional — Options and Programs work fully without it. The
+  <code>voice</code> field is purely additive.</p>
+
+  <h2>Shortcut metadata (optional facet)</h2>
+
+  <p>An Option (or Program entry row) can declare a <code>shortcut</code> field
+  that links it to the shared <strong>KeyboardShortcutManager</strong> registry
+  — the single source of truth for keyboard/insertion shortcuts across the HAX
+  ecosystem. That registry is also used by HAXcms <code>Ctrl+Shift+[Key]</code>
+  bindings and the HAXStore markdown-trigger-to-gizmo map, so a Merlin option
+  can reference the same shortcut descriptor those subsystems use.</p>
+
+  <p><code>shortcut</code> accepts either a registry id string (e.g.
+  <code>"cms-save"</code>) — resolves to a descriptor previously registered via
+  <code>KeyboardShortcutManagerInstance.register(...)</code> — or an inline
+  descriptor object with the canonical shape:</p>
+
+  <code-sample type="javascript"
+  copy-clipboard-button="copy-clipboard-button"><template>{
+    id: "cms-save",                          // stable unique id
+    type: "binding",                         // 'binding' (modifier+key) | 'markdown' (typed trigger insert)
+    key: "S",                                // physical key (binding)
+    ctrl: true, shift: true, alt: false, meta: false, // binding modifiers
+    trigger: "###",                          // markdown trigger (type: 'markdown')
+    tag: "h3",                               // markdown insert target tag
+    content: "",                             // markdown insert inner content
+    description: "Save page",                // human-readable
+    context: "edit",                         // 'edit' | 'view' | 'global'
+    allowInInput: false,                     // whether the binding fires while focus is in an input
+    callback: Function,                      // optional direct callback (binding)
+    condition: Function,                     // optional active-condition (binding)
+    eventName: "super-daemon-element-method", // optional event to fire instead of / alongside callback
+  }</template></code-sample>
+
+  <p>When <code>shortcut</code> is present, <code>defineOption()</code> resolves
+  a human-readable label via <code>KeyboardShortcutManager.getLabel()</code> and
+  stores it on <code>shortcutLabel</code> (e.g. <code>"Ctrl⇧S"</code> for a
+  binding, <code>"###"</code> for a markdown trigger). The UI reads
+  <code>shortcutLabel</code> to render a keyboard hint in the row. Both
+  <code>shortcut</code> and <code>shortcutLabel</code> are excluded from the
+  search index so they don't pollute text matching.</p>
+
+  <p>Real example (from <code>haxcms-site-editor-ui.js</code>):</p>
+
+  <code-sample type="javascript"
+  copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+    title: this.t.save,
+    icon: "icons:save",
+    tags: ["CMS", "save", "page"],
+    shortcut: "cms-save", // links to the Ctrl+Shift+S binding
+    value: { target: this, method: "_editButtonTap" },
+    context: "HAX",
+    eventName: "super-daemon-element-method",
+    path: "CMS/action/save",
+  });</template></code-sample>
+
+  <p>This layer is optional — the <code>shortcut</code> field is purely additive
+  and does not change how an option is invoked; it only surfaces a keyboard-hint
+  label in the UI and (optionally) ties the option to a shared descriptor for
+  cross-subsystem consistency.</p>

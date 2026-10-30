@@ -1,5 +1,7 @@
 # Merlin Schema
 
+📖 **[Browse the rendered docs](https://haxtheweb.github.io/merlin-schema/)**
+
 > Authoritative documentation for the **Merlin** command-palette / voice-assistant schema used across the HAX ecosystem.
 
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)

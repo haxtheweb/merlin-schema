@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    <title>Merlin Schema</title>
+    <link>https://localhost/merlin-schema-docs/</link>
+    <description>Authoritative documentation for the Merlin command-palette and voice-assistant schema used across the HAX ecosystem.</description>
+    <copyright>Copyright (C) 2026 https://localhost/merlin-schema-docs</copyright>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 30 Oct 2026 17:55:55 GMT</lastBuildDate>
+    <generator>HAXcms NodeJS</generator>
+    <atom:link href="https://localhost/merlin-schema-docs/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>Overview</title>
+      <link>https://localhost/merlin-schema-docs/welcome</link>
+      <description>Merlin is the universal command-palette and voice assistant in the HAX ecosystem. It is implemented by the &amp;lt;super-daemon&amp;gt; web component — a global singleton ( globalThis.SuperDaemonManager ) that surfaces a searchable palette of commands and a debounced, multi-step &quot;program&quot; engine. Users open it with Alt+Shift (or Meta+Shift on macOS). The persona name &quot;Merlin&quot; appears in voice prompts, UI copy, and throughout the codebase. Merlin is used across HAXcms (site operations, admin panels, p...</description>
+      <guid>https://localhost/merlin-schema-docs/welcome</guid>
+      <pubDate>Fri, 30 Oct 2026 17:55:55 GMT</pubDate>
+    </item>
+    <item>
+      <title>Option Schema Reference</title>
+      <link>https://localhost/merlin-schema-docs/option-schema-reference</link>
+      <description>Required fields: title , value , eventName . Required fields title (string) — Primary display label. Used for alphabetical sort and exact-match priority boosting. value (object) — Payload dispatched as the detail of the CustomEvent named by eventName . Shape varies by eventName . eventName (string) — Name of the CustomEvent dispatched when the row is selected. Display and search fields icon (string, optional) — Icon name (e.g. &quot;icons:save&quot; , &quot;hax:wizard-hat&quot; ) rendered by simple-icon-lite . i...</description>
+      <guid>https://localhost/merlin-schema-docs/option-schema-reference</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:09 GMT</pubDate>
+    </item>
+    <item>
+      <title>Program Schema Reference</title>
+      <link>https://localhost/merlin-schema-docs/program-schema-reference</link>
+      <description>A Program is an Option with eventName: &quot;super-daemon-run-program&quot; and a value object containing the following keys. value object fields name (string, required) — Human-readable name shown as the program-mode title while the program is active. program ( async (input, values) =&amp;gt; Promise&amp;lt;Option[]&amp;gt; , required) — The search function. input is the current search text; values is the bag passed into runProgram() . Each returned item is an Option-shaped row rendered by super-daemon-row . Re-i...</description>
+      <guid>https://localhost/merlin-schema-docs/program-schema-reference</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:16 GMT</pubDate>
+    </item>
+    <item>
+      <title>Event Contract &amp; Context System</title>
+      <link>https://localhost/merlin-schema-docs/event-contract-context-system</link>
+      <description>Event contract When a result row is selected, super-daemon-row.selected() always dispatches a super-daemon-row-selected event (with detail = the row element), then dispatches a CustomEvent named option.eventName with detail set to option.value . For any eventName other than super-daemon-run-program , it also dispatches super-daemon-close to close the palette. Program selections keep the palette open so the user can continue interacting. The super-daemon singleton listens for these events glob...</description>
+      <guid>https://localhost/merlin-schema-docs/event-contract-context-system</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:23 GMT</pubDate>
+    </item>
+    <item>
+      <title>Voice &amp; Shortcut Metadata</title>
+      <link>https://localhost/merlin-schema-docs/voice-shortcut-metadata</link>
+      <description>Voice command layer (optional facet) When voiceSearch is enabled on the super-daemon element, the hal-9000 speech engine is loaded and Merlin&apos;s commands become voice-addressable. Each Option can declare a voice phrase pattern; if omitted, the title is used. The pattern syntax uses parenthesized segments for optional words, e.g. &quot;(toggle) dark mode&quot; matches both &quot;toggle dark mode&quot; and &quot;dark mode&quot;. Voice commands are re-processed ( reprocessVoiceCommands() ) whenever the visible item set change...</description>
+      <guid>https://localhost/merlin-schema-docs/voice-shortcut-metadata</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:30 GMT</pubDate>
+    </item>
+    <item>
+      <title>Rules &amp; Minimal Samples</title>
+      <link>https://localhost/merlin-schema-docs/rules-minimal-samples</link>
+      <description>Rules for tools and agents registering Merlin commands Required: title , value , eventName . defineOption() silently ignores options missing any of them. Match value to eventName : {target, method, args?} for super-daemon-element-method , {target} for super-daemon-element-click , {name, program, ...} for super-daemon-run-program , {shortcutId} for execute-keyboard-shortcut . Use arrays for context ( [&quot;CMS&quot;] ). A string context is matched with String.includes , so it matches by substring. Prog...</description>
+      <guid>https://localhost/merlin-schema-docs/rules-minimal-samples</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:35 GMT</pubDate>
+    </item>
+    <item>
+      <title>More Schemas</title>
+      <link>https://localhost/merlin-schema-docs/more-schemas</link>
+      <description>merlin-schema is one of several schema specifications in the HAX ecosystem. Explore the others: JSON Outline Schema — the content structure, site navigation, and metadata schema used by HAXcms. HAX Schema — the full haxProperties contract for element authoring. HAX Element Schema — the lightweight virtual DOM object format used for demoSchema, insertion, and conversion workflows. Appstore Spec — the schema for external media providers, upload targets, stax templates, and autoloaded elements. ...</description>
+      <guid>https://localhost/merlin-schema-docs/more-schemas</guid>
+      <pubDate>Fri, 30 Oct 2026 17:58:42 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

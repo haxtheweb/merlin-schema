@@ -1,0 +1,51 @@
+<h2>Rules for tools and agents registering Merlin commands</h2>
+<ol>
+<li><strong>Required:</strong> <code>title</code>, <code>value</code>, <code>eventName</code>. <code>defineOption()</code> silently ignores options missing any of them.</li>
+<li><strong>Match <code>value</code> to <code>eventName</code>:</strong> <code>{target, method, args?}</code> for <code>super-daemon-element-method</code>, <code>{target}</code> for <code>super-daemon-element-click</code>, <code>{name, program, ...}</code> for <code>super-daemon-run-program</code>, <code>{shortcutId}</code> for <code>execute-keyboard-shortcut</code>.</li>
+<li><strong>Use arrays for <code>context</code></strong> (<code>["CMS"]</code>). A string context is matched with <code>String.includes</code>, so it matches by substring. Program <code>value.context</code> is the opposite: one string, because it becomes the active command context.</li>
+<li><strong>Never set <code>index</code></strong>, and don't set <code>shortcutLabel</code> on registered options: <code>defineOption()</code> builds both. Program result rows skip <code>defineOption()</code>, so set <code>shortcutLabel</code> there yourself if you want a key hint.</li>
+<li><strong>Pick <code>inline</code> or <code>inlineOnly</code>, not both.</strong> <code>hidden</code> and <code>inlineOnly</code> programs need a <code>machineName</code>, because that's the only way to launch them.</li>
+<li><strong>No unknown keys.</strong> Custom keys must start with <code>x-</code>, and remember every string field (including <code>x-</code> ones) goes into the search index.</li>
+<li><strong>Scan before you finish:</strong> <code>merlin-validate --scan &lt;file&gt;</code>.</li>
+</ol>
+<h2>Minimal working sample</h2>
+<p>A static Option (fires one event and closes):</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>import { SuperDaemonInstance } from "@haxtheweb/super-daemon/super-daemon.js";
+
+SuperDaemonInstance.defineOption({
+  title: "Save",
+  icon: "icons:save",
+  tags: ["CMS", "save", "page"],
+  shortcut: "cms-save", // links to the Ctrl+Shift+S binding
+  context: "HAX",
+  eventName: "super-daemon-element-method",
+  path: "CMS/action/save",
+  value: {
+    target: this,
+    method: "_editButtonTap",
+  },
+});</template></code-sample>
+<p>A dynamic Program (launches a search-driven sub-palette):</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+  title: "Export this site",
+  icon: "icons:file-download",
+  tags: ["CMS", "export", "site"],
+  eventName: "super-daemon-run-program",
+  path: "CMS/export/site",
+  context: ["CMS"],
+  voice: "export site",
+  value: {
+    name: "Export this site",
+    machineName: "export-site",
+    program: async (input, values) =&gt; {
+      const { createExportSiteProgram } = await import(
+        "./utils/ExportSiteProgram.js"
+      );
+      return createExportSiteProgram(this)(input, values);
+    },
+  },
+});</template></code-sample>
+<h2>Validation</h2>
+<p>Merlin options are JS objects in source files, so the most useful check is the static scan:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>npx -p @haxtheweb/merlin-schema merlin-validate --scan elements/my-element/my-element.js</template></code-sample>
+<p><code>--scan</code> validates every <code>*.defineOption({...})</code> object literal as a registered option and every other object literal with <code>title</code> + <code>eventName</code> + <code>value</code> as a Program result row. Values that are not literals (<code>this.t.save</code>, function references, lit templates) are accepted as-is; literal values, keys and <code>value</code> shapes are checked. JSON files are validated without <code>--scan</code>; add <code>--rows</code> for arrays of Program result rows and <code>--json</code> for a structured report.</p>

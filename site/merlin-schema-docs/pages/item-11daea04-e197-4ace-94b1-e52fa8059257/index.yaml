@@ -1,0 +1,158 @@
+id: item-11daea04-e197-4ace-94b1-e52fa8059257
+indent: 0
+location: pages/item-11daea04-e197-4ace-94b1-e52fa8059257/index.yaml
+slug: event-contract-context-system
+order: 3
+parent: null
+title: Event Contract & Context System
+description: ''
+metadata:
+  created: 1793383103
+  updated: 1793383103
+  images: []
+  videos: []
+content: >-
+  <h2>Event contract</h2>
+
+  <p>When a result row is selected, <code>super-daemon-row.selected()</code>
+  always dispatches a <code>super-daemon-row-selected</code> event (with
+  <code>detail</code> = the row element), then dispatches a
+  <code>CustomEvent</code> named <code>option.eventName</code> with
+  <code>detail</code> set to <code>option.value</code>. For any
+  <code>eventName</code> other than <code>super-daemon-run-program</code>, it
+  also dispatches <code>super-daemon-close</code> to close the palette. Program
+  selections keep the palette open so the user can continue interacting.</p>
+
+  <p>The <code>super-daemon</code> singleton listens for these events globally
+  and routes them:</p>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">eventName routing table</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>super-daemon-element-method</strong> — Calls
+  <code>value.target[value.method](...value.args)</code>. Closes palette.</li>
+
+  <li><strong>super-daemon-element-click</strong> — Dispatches a synthetic
+  <code>MouseEvent("click")</code> on <code>value.target</code>. Closes
+  palette.</li>
+
+  <li><strong>super-daemon-run-program</strong> — Hands <code>value</code> to
+  <code>runProgram()</code> — enters program mode. Does <em>not</em> close
+  palette.</li>
+
+  <li><strong>hax-super-daemon-insert-tag</strong> — HAXStore inserts a block:
+  fills a waiting program target with <code>properties.src/source/href</code>,
+  otherwise inserts through the tray (<code>value</code>: <code>{ value: tag,
+  eventName: "insert-tag", demoSchema: true }</code> or <code>{ properties,
+  content }</code>). Closes palette.</li>
+
+  <li><strong>execute-keyboard-shortcut</strong> —
+  <code>haxcms-site-editor-ui</code> resolves <code>value.shortcutId</code> in
+  <code>KeyboardShortcutManager</code> and runs it. Closes palette.</li>
+
+  <li><strong>disabled</strong> — No-op. Used for informational rows like "No
+  active page found". Closes palette.</li>
+
+  <li><strong>super-daemon-noop</strong> — No-op instruction row (no listener).
+  Closes palette.</li>
+
+  <li><strong>anything else</strong> — Dispatched as a plain
+  <code>CustomEvent</code>; you need your own listener. Closes palette.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <p>Other events the singleton listens for (dispatch these to drive Merlin from
+  code):</p>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Other listened events</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>super-daemon-define-option</strong> — <code>detail</code> is
+  treated as an Option and registered via <code>defineOption()</code>.</li>
+
+  <li><strong>super-daemon-run-program</strong> — <code>detail</code> (<code>{
+  program, context, name, placeholder, values }</code>) launches a program.</li>
+
+  <li><strong>super-daemon-element-method</strong> — <code>detail</code>
+  (<code>{ target, method, args }</code>) invokes a method on a target.</li>
+
+  <li><strong>super-daemon-element-click</strong> — <code>detail</code> (<code>{
+  target }</code>) clicks a target.</li>
+
+  <li><strong>super-daemon-close</strong> — Closes the palette and resets
+  state.</li>
+
+  <li><strong>super-daemon-program-enter</strong> — <code>detail</code> (<code>{
+  programName, input }</code>) handles Enter pressed with no filtered results
+  (used by the create-page program).</li>
+
+  <li><strong>super-daemon-voice-command</strong> — <code>detail</code> (<code>{
+  command, callback, context }</code>) registers a voice command.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <h2>Context system</h2>
+
+  <p>Every Option declares a <code>context</code> — a string or array of strings
+  that determines when it is visible. The singleton tracks an active
+  <code>commandContext</code> (a single string) and a <code>context</code> array
+  (the set of contexts the current page/app state provides). An option appears
+  only when its <code>context</code> intersects the active set.</p>
+
+  <a11y-collapse heading-button="heading-button">
+
+  <h2 slot="heading">Context values</h2>
+
+  <div slot="content">
+
+  <ul>
+
+  <li><strong>*</strong> — Global — always available (the default when
+  <code>context</code> is omitted).</li>
+
+  <li><strong>CMS</strong> — Available while in the HAXcms site-editor
+  context.</li>
+
+  <li><strong>HAX</strong> — Available while in the HAX body editor (authoring)
+  context.</li>
+
+  <li><strong>admin</strong> — Available for admin/site-settings
+  operations.</li>
+
+  <li><strong>logged-in</strong> — Available only when the user is
+  authenticated.</li>
+
+  <li><strong>&gt;</strong> — Developer mode — a special context entered by
+  typing <code>&gt;</code> in the palette.</li>
+
+  </ul>
+
+  </div>
+
+  </a11y-collapse>
+
+  <p>The user switches the active <code>commandContext</code> by typing a prefix
+  character (<code>/</code>, <code>*</code>, or <code>&gt;</code>) into the
+  search input, or via voice ("run program" → <code>/</code>, "developer mode" →
+  <code>&gt;</code>). When <code>commandContext</code> is <code>"*"</code>
+  (global browse), options are filtered against the page's <code>context</code>
+  array; when it is a specific value, only options whose <code>context</code>
+  includes that value are shown.</p>

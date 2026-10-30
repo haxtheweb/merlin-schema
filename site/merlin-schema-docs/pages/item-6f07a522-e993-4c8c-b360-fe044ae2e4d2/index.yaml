@@ -1,0 +1,90 @@
+id: item-6f07a522-e993-4c8c-b360-fe044ae2e4d2
+indent: 0
+location: pages/item-6f07a522-e993-4c8c-b360-fe044ae2e4d2/index.yaml
+slug: welcome
+order: 0
+parent: null
+title: Overview
+description: ''
+metadata:
+  created: 1793382955
+  updated: 1793382955
+content: >-
+  <p><strong>Merlin</strong> is the universal command-palette and voice
+  assistant in the HAX ecosystem. It is implemented by the
+  <code>&lt;super-daemon&gt;</code> web component — a global singleton
+  (<code>globalThis.SuperDaemonManager</code>) that surfaces a searchable
+  palette of commands and a debounced, multi-step "program" engine. Users open
+  it with <code>Alt+Shift</code> (or <code>Meta+Shift</code> on macOS). The
+  persona name "Merlin" appears in voice prompts, UI copy, and throughout the
+  codebase.</p>
+
+  <p>Merlin is used across <strong>HAXcms</strong> (site operations, admin
+  panels, page editing), the <strong>HAX body</strong> (content authoring), and
+  <strong>app-hax</strong> (the application shell). Any part of the application
+  can register commands into the single shared palette, and those commands are
+  filtered by the active "context" so the user only sees what is relevant.</p>
+
+  <p>This site documents the schema/contract for the two data structures that
+  plug into Merlin — the <strong>Option</strong> and the
+  <strong>Program</strong> — so that AI agents and human contributors can
+  register and build Merlin commands without reverse-engineering the source.</p>
+
+  <h2>Core concepts</h2>
+
+  <p>Merlin has two kinds of registrable commands:</p>
+
+  <ul>
+
+  <li><strong>Option</strong> — a static, searchable command. It appears in the
+  palette list; selecting it fires a single CustomEvent and (usually) closes the
+  palette. Registered via
+  <code>SuperDaemonInstance.defineOption(option)</code>.</li>
+
+  <li><strong>Program</strong> — a dynamic, search-driven command. Selecting its
+  entry row launches "program mode": an async function is invoked with the
+  user's search text, and the array of Option-shaped rows it returns
+  <em>replaces</em> the top-level list. The function is re-invoked (debounced
+  ~150ms) on every keystroke, so the results live-update as the user types. A
+  Program is just an Option whose <code>eventName</code> is
+  <code>"super-daemon-run-program"</code> and whose <code>value.program</code>
+  is that async function.</li>
+
+  </ul>
+
+  <h2>The singleton access pattern</h2>
+
+  <p>Merlin is a single shared instance. Get a reference to it like this:</p>
+
+  <code-sample type="javascript"
+  copy-clipboard-button="copy-clipboard-button"><template>import {
+  SuperDaemonInstance } from "@haxtheweb/super-daemon/super-daemon.js";
+
+
+  // or, from anywhere without an import:
+
+  const SuperDaemonInstance =
+    globalThis.SuperDaemonManager.requestAvailability();</template></code-sample>
+  <p>Then register commands:</p>
+
+  <code-sample type="javascript"
+  copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+  ... });</template></code-sample>
+
+  <h2>The registration call</h2>
+
+  <p><code>defineOption(option)</code> does light validation (requires
+  <code>value</code>, <code>title</code>, <code>eventName</code>) and then
+  auto-builds a searchable <code>index</code> string from the option's other
+  fields. It pushes the option into <code>allItems</code>. Options can be
+  registered at any time — most are registered in an element's
+  <code>firstUpdated()</code> or on module load.</p>
+
+  <h2>Where the runtime implementation lives</h2>
+
+  <p>This spec is documentation only. The code that consumes this schema lives
+  in the webcomponents monorepo, primarily
+  <code>elements/super-daemon/super-daemon.js</code> (the singleton), the UI in
+  <code>lib/super-daemon-ui.js</code>/<code>lib/super-daemon-row.js</code>/<code>lib/super-daemon-search.js</code>,
+  and real Program factory modules under
+  <code>elements/haxcms-elements/lib/core/utils/*Program.js</code>.</p>

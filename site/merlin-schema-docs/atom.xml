@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Merlin Schema</title>
+  <link href="https://localhost/merlin-schema-docs/" rel="self" />
+  <subtitle>Authoritative documentation for the Merlin command-palette and voice-assistant schema used across the HAX ecosystem.</subtitle>
+  <updated>2026-10-30T17:55:55.000Z</updated>
+  <author>
+      <name></name>
+  </author>
+  <id>https://localhost/merlin-schema-docs/</id>
+  
+  <entry>
+    <title>Overview</title>
+    <id>item-6f07a522-e993-4c8c-b360-fe044ae2e4d2</id>
+    <updated>2026-10-30T17:55:55.000Z</updated>
+    <published>2026-10-30T17:55:55.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/welcome"/>
+    
+    <content type="html">
+      <![CDATA[ <p><strong>Merlin</strong> is the universal command-palette and voice assistant in the HAX ecosystem. It is implemented by the <code>&lt;super-daemon&gt;</code> web component — a global singleton (<code>globalThis.SuperDaemonManager</code>) that surfaces a searchable palette of commands and a debounced, multi-step "program" engine. Users open it with <code>Alt+Shift</code> (or <code>Meta+Shift</code> on macOS). The persona name "Merlin" appears in voice prompts, UI copy, and throughout the codebase.</p>
+<p>Merlin is used across <strong>HAXcms</strong> (site operations, admin panels, page editing), the <strong>HAX body</strong> (content authoring), and <strong>app-hax</strong> (the application shell). Any part of the application can register commands into the single shared palette, and those commands are filtered by the active "context" so the user only sees what is relevant.</p>
+<p>This site documents the schema/contract for the two data structures that plug into Merlin — the <strong>Option</strong> and the <strong>Program</strong> — so that AI agents and human contributors can register and build Merlin commands without reverse-engineering the source.</p>
+<h2>Core concepts</h2>
+<p>Merlin has two kinds of registrable commands:</p>
+<ul>
+<li><strong>Option</strong> — a static, searchable command. It appears in the palette list; selecting it fires a single CustomEvent and (usually) closes the palette. Registered via <code>SuperDaemonInstance.defineOption(option)</code>.</li>
+<li><strong>Program</strong> — a dynamic, search-driven command. Selecting its entry row launches "program mode": an async function is invoked with the user's search text, and the array of Option-shaped rows it returns <em>replaces</em> the top-level list. The function is re-invoked (debounced ~150ms) on every keystroke, so the results live-update as the user types. A Program is just an Option whose <code>eventName</code> is <code>"super-daemon-run-program"</code> and whose <code>value.program</code> is that async function.</li>
+</ul>
+<h2>The singleton access pattern</h2>
+<p>Merlin is a single shared instance. Get a reference to it like this:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>import { SuperDaemonInstance } from "@haxtheweb/super-daemon/super-daemon.js";
+
+// or, from anywhere without an import:
+const SuperDaemonInstance =
+  globalThis.SuperDaemonManager.requestAvailability();</template></code-sample>
+<p>Then register commands:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({ ... });</template></code-sample>
+<h2>The registration call</h2>
+<p><code>defineOption(option)</code> does light validation (requires <code>value</code>, <code>title</code>, <code>eventName</code>) and then auto-builds a searchable <code>index</code> string from the option's other fields. It pushes the option into <code>allItems</code>. Options can be registered at any time — most are registered in an element's <code>firstUpdated()</code> or on module load.</p>
+<h2>Where the runtime implementation lives</h2>
+<p>This spec is documentation only. The code that consumes this schema lives in the webcomponents monorepo, primarily <code>elements/super-daemon/super-daemon.js</code> (the singleton), the UI in <code>lib/super-daemon-ui.js</code>/<code>lib/super-daemon-row.js</code>/<code>lib/super-daemon-search.js</code>, and real Program factory modules under <code>elements/haxcms-elements/lib/core/utils/*Program.js</code>.</p> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>Option Schema Reference</title>
+    <id>item-5861a757-2f3e-4f38-a7c3-c20c51e52c46</id>
+    <updated>2026-10-30T17:58:09.000Z</updated>
+    <published>2026-10-30T17:58:09.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/option-schema-reference"/>
+    
+    <content type="html">
+      <![CDATA[ <p>Required fields: <code>title</code>, <code>value</code>, <code>eventName</code>.</p>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Required fields</h2>
+<div slot="content">
+<ul>
+<li><strong>title</strong> (string) — Primary display label. Used for alphabetical sort and exact-match priority boosting.</li>
+<li><strong>value</strong> (object) — Payload dispatched as the <code>detail</code> of the CustomEvent named by <code>eventName</code>. Shape varies by <code>eventName</code>.</li>
+<li><strong>eventName</strong> (string) — Name of the CustomEvent dispatched when the row is selected.</li>
+</ul>
+</div>
+</a11y-collapse>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Display and search fields</h2>
+<div slot="content">
+<ul>
+<li><strong>icon</strong> (string, optional) — Icon name (e.g. <code>"icons:save"</code>, <code>"hax:wizard-hat"</code>) rendered by <code>simple-icon-lite</code>.</li>
+<li><strong>image</strong> (string, optional) — Image URL rendered in the row as an alternative to <code>icon</code>.</li>
+<li><strong>textCharacter</strong> (string, optional) — A single character or emoji rendered as an alternative to icon/image (e.g. <code>"🍌"</code>).</li>
+<li><strong>tags</strong> (string[], optional, default <code>[]</code>) — Searchable keyword tags. Also rendered as <code>simple-tag</code> chips in the row.</li>
+<li><strong>path</strong> (string, optional, default <code>""</code>) — Breadcrumb-style location string (e.g. <code>"CMS/admin/seo"</code>). Searchable as a whole phrase and split on <code>/</code>.</li>
+<li><strong>description</strong> (string, optional) — Extra searchable text. Indexed for search but not rendered.</li>
+<li><strong>priority</strong> (number, optional, default <code>0</code>) — Sort weight. Lower numbers sort higher. Negative values boost prominence. An exact title match forces <code>-10000000</code>.</li>
+<li><strong>more</strong> (lit-html TemplateResult, optional) — Extra detail rendered in an expandable <code>&lt;details&gt;</code> section of the row. Only a plain string <code>more</code> is added to the search index.</li>
+</ul>
+</div>
+</a11y-collapse>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Visibility and behavior fields</h2>
+<div slot="content">
+<ul>
+<li><strong>context</strong> (string | string[], optional, default <code>"*"</code>) — Visibility scope. <code>"*"</code> means available in every context. Other common values: <code>"CMS"</code>, <code>"HAX"</code>, <code>"admin"</code>, <code>"logged-in"</code>, <code>"community"</code>, <code>"&gt;"</code> (developer mode), <code>"/"</code> (program list), and platform feature names (<code>"addPage"</code>, <code>"uploadMedia"</code>, <code>"outlineDesigner"</code>) that disappear when HAXcms platform settings disable the feature. Prefer an array; a string is matched by substring.</li>
+<li><strong>inline</strong> (boolean, optional, default <code>false</code>) — Also list the option when Merlin is invoked inline (slash in an empty block, <code>::</code> token, RTE toolbar button).</li>
+<li><strong>inlineOnly</strong> (boolean, optional, default <code>false</code>) — List the option only when Merlin is invoked inline; never in global browse/search. Implies <code>inline</code>, so don't set both.</li>
+<li><strong>externalLink</strong> (boolean, optional, default <code>false</code>) — Renders an open-in-new-window icon on the row (the option opens an external site).</li>
+<li><strong>hidden</strong> (boolean, optional) — When true, the option is registered and invokable by <code>machineName</code>/shortcut but excluded from browse/search results.</li>
+</ul>
+</div>
+</a11y-collapse>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Voice and shortcut fields</h2>
+<div slot="content">
+<ul>
+<li><strong>voice</strong> (string, optional, falls back to <code>title</code>) — Voice-command phrase pattern for the <code>hal-9000</code> speech layer, e.g. <code>"(toggle) dark mode"</code>. Parenthesized segments are optional words.</li>
+<li><strong>shortcut</strong> (string | object, optional) — Keyboard-shortcut metadata linking the option to the shared <code>KeyboardShortcutManager</code> registry. Either a registry id string (e.g. <code>"cms-save"</code>) or an inline descriptor object. Resolved to <code>shortcutLabel</code>; both excluded from the search index.</li>
+</ul>
+</div>
+</a11y-collapse>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Auto-built fields (do not set yourself)</h2>
+<div slot="content">
+<ul>
+<li><strong>index</strong> (string, auto) — A space-joined, de-duplicated, lowercased search index derived from <code>tags</code>/<code>path</code>/<code>title</code>/<code>voice</code>/<code>more</code>/<code>context</code> plus the full path phrase.</li>
+<li><strong>shortcutLabel</strong> (string, auto) — Human-readable label from <code>KeyboardShortcutManager.getLabel()</code> (e.g. <code>"Ctrl⇧S"</code>, <code>"###"</code>). Program result rows are not passed through <code>defineOption()</code>, so a row that wants a key hint sets it directly.</li>
+</ul>
+</div>
+</a11y-collapse> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>Program Schema Reference</title>
+    <id>item-a2189239-ca25-4a0f-88ea-8f36eeda8678</id>
+    <updated>2026-10-30T17:58:16.000Z</updated>
+    <published>2026-10-30T17:58:16.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/program-schema-reference"/>
+    
+    <content type="html">
+      <![CDATA[ <p>A Program is an Option with <code>eventName: "super-daemon-run-program"</code> and a <code>value</code> object containing the following keys.</p>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">value object fields</h2>
+<div slot="content">
+<ul>
+<li><strong>name</strong> (string, required) — Human-readable name shown as the program-mode title while the program is active.</li>
+<li><strong>program</strong> (<code>async (input, values) =&gt; Promise&lt;Option[]&gt;</code>, required) — The search function. <code>input</code> is the current search text; <code>values</code> is the bag passed into <code>runProgram()</code>. Each returned item is an Option-shaped row rendered by <code>super-daemon-row</code>. Re-invoked (debounced ~150ms) on every keystroke.</li>
+<li><strong>machineName</strong> (string, optional) — Stable identifier enabling <code>runProgram('like', context, values, 'machineName')</code> to resolve and invoke this program by name without holding a direct function reference.</li>
+<li><strong>context</strong> (string, optional) — Command context to activate when the program launches (e.g. <code>"CMS"</code> or <code>"&gt;"</code>). A single string, not an array: <code>runProgram()</code> assigns it straight to <code>commandContext</code>.</li>
+<li><strong>placeholder</strong> (string, optional) — Placeholder text for the search input while the program is active (e.g. <code>"Enter new title"</code>).</li>
+<li><strong>initialValue</strong> (<code>async (values) =&gt; Promise&lt;string&gt;</code>, optional) — Optional prefill: a non-empty string return pre-fills the search input when the program is launched with no explicit like/search. Currently only honored when the program is launched by <code>machineName</code>; selecting the row from Merlin search passes the function directly and skips it.</li>
+</ul>
+</div>
+</a11y-collapse>
+<p>The whole <code>value</code> object is also the program's second argument (<code>values</code>), so any extra keys you put on <code>value</code> reach the program.</p>
+<h2>The lazy factory pattern</h2>
+<p>Programs are commonly lazy-loaded via dynamic <code>import()</code> of a <code>createXProgram(context)</code> factory module, so the program code is only fetched when the user actually selects it:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+  title: "Update page tags",
+  icon: "icons:label",
+  tags: ["CMS", "edit", "tags", "metadata"],
+  eventName: "super-daemon-run-program",
+  path: "CMS/edit/tags",
+  context: ["CMS"],
+  voice: "edit tags",
+  value: {
+    name: "Update page tags",
+    machineName: "edit-tags",
+    placeholder: "Enter tags separated by commas",
+    initialValue: async (values) =&gt; {
+      const activeItem = toJS(store.activeItem);
+      return (activeItem &amp;&amp; activeItem.metadata &amp;&amp; activeItem.metadata.tags) || "";
+    },
+    program: async (input, values) =&gt; {
+      const { createEditTagsProgram } = await import(
+        "./utils/EditTagsProgram.js"
+      );
+      return createEditTagsProgram(this)(input, values);
+    },
+  },
+});</template></code-sample>
+<p>The factory module exports a <code>createXProgram(context)</code> function that returns the actual <code>async (input, values) =&gt; [...]</code> function, closing over <code>context</code> (typically the <code>haxcms-site-editor-ui</code> instance) so the program can call back into editor methods.</p>
+<h2>What a program returns</h2>
+<p>The program function returns an array of Option-shaped rows. Each row follows the same Option schema and is rendered by <code>super-daemon-row</code>. A common pattern is to return "confirm" rows that use <code>eventName: "super-daemon-element-method"</code> to dispatch a save event:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>return [
+  {
+    title: `Save tags: ${input}`,
+    icon: "icons:check",
+    tags: ["confirm", "save"],
+    eventName: "super-daemon-element-method",
+    path: "CMS/edit/tags/confirm",
+    value: {
+      target: globalThis,
+      method: "dispatchEvent",
+      args: [
+        new CustomEvent("haxcms-save-node-details", {
+          bubbles: true,
+          composed: true,
+          detail: { id: activeItem.id, operation: "setTags", tags: input },
+        }),
+      ],
+    },
+  },
+];</template></code-sample>
+<h2>runProgram() — invoking a program programmatically</h2>
+<p>Programs can also be launched from code (not just by user search), via <code>SuperDaemonInstance.runProgram()</code>:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>runProgram(
+  like = null,      // pre-fill the search input (string or null)
+  context = "/",    // command context to activate
+  values = {},      // bag passed as the 2nd arg to the program function
+  program = null,   // a direct function reference OR a machineName string
+  name = null,      // program-mode title
+  search = "",      // initial search text
+  placeholder = null,
+);</template></code-sample>
+<p>When <code>program</code> is a string, <code>runProgram</code> looks up the matching <code>value.machineName</code> in <code>allItems</code> to resolve the function. The <code>waveWand(params, target, sound)</code> helper wraps <code>runProgram</code> + <code>open()</code> + an optional sound for the common "open Merlin in mini/wand mode near a target" interaction pattern.</p> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>Event Contract &amp; Context System</title>
+    <id>item-11daea04-e197-4ace-94b1-e52fa8059257</id>
+    <updated>2026-10-30T17:58:23.000Z</updated>
+    <published>2026-10-30T17:58:23.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/event-contract-context-system"/>
+    
+    <content type="html">
+      <![CDATA[ <h2>Event contract</h2>
+<p>When a result row is selected, <code>super-daemon-row.selected()</code> always dispatches a <code>super-daemon-row-selected</code> event (with <code>detail</code> = the row element), then dispatches a <code>CustomEvent</code> named <code>option.eventName</code> with <code>detail</code> set to <code>option.value</code>. For any <code>eventName</code> other than <code>super-daemon-run-program</code>, it also dispatches <code>super-daemon-close</code> to close the palette. Program selections keep the palette open so the user can continue interacting.</p>
+<p>The <code>super-daemon</code> singleton listens for these events globally and routes them:</p>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">eventName routing table</h2>
+<div slot="content">
+<ul>
+<li><strong>super-daemon-element-method</strong> — Calls <code>value.target[value.method](...value.args)</code>. Closes palette.</li>
+<li><strong>super-daemon-element-click</strong> — Dispatches a synthetic <code>MouseEvent("click")</code> on <code>value.target</code>. Closes palette.</li>
+<li><strong>super-daemon-run-program</strong> — Hands <code>value</code> to <code>runProgram()</code> — enters program mode. Does <em>not</em> close palette.</li>
+<li><strong>hax-super-daemon-insert-tag</strong> — HAXStore inserts a block: fills a waiting program target with <code>properties.src/source/href</code>, otherwise inserts through the tray (<code>value</code>: <code>{ value: tag, eventName: "insert-tag", demoSchema: true }</code> or <code>{ properties, content }</code>). Closes palette.</li>
+<li><strong>execute-keyboard-shortcut</strong> — <code>haxcms-site-editor-ui</code> resolves <code>value.shortcutId</code> in <code>KeyboardShortcutManager</code> and runs it. Closes palette.</li>
+<li><strong>disabled</strong> — No-op. Used for informational rows like "No active page found". Closes palette.</li>
+<li><strong>super-daemon-noop</strong> — No-op instruction row (no listener). Closes palette.</li>
+<li><strong>anything else</strong> — Dispatched as a plain <code>CustomEvent</code>; you need your own listener. Closes palette.</li>
+</ul>
+</div>
+</a11y-collapse>
+<p>Other events the singleton listens for (dispatch these to drive Merlin from code):</p>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Other listened events</h2>
+<div slot="content">
+<ul>
+<li><strong>super-daemon-define-option</strong> — <code>detail</code> is treated as an Option and registered via <code>defineOption()</code>.</li>
+<li><strong>super-daemon-run-program</strong> — <code>detail</code> (<code>{ program, context, name, placeholder, values }</code>) launches a program.</li>
+<li><strong>super-daemon-element-method</strong> — <code>detail</code> (<code>{ target, method, args }</code>) invokes a method on a target.</li>
+<li><strong>super-daemon-element-click</strong> — <code>detail</code> (<code>{ target }</code>) clicks a target.</li>
+<li><strong>super-daemon-close</strong> — Closes the palette and resets state.</li>
+<li><strong>super-daemon-program-enter</strong> — <code>detail</code> (<code>{ programName, input }</code>) handles Enter pressed with no filtered results (used by the create-page program).</li>
+<li><strong>super-daemon-voice-command</strong> — <code>detail</code> (<code>{ command, callback, context }</code>) registers a voice command.</li>
+</ul>
+</div>
+</a11y-collapse>
+<h2>Context system</h2>
+<p>Every Option declares a <code>context</code> — a string or array of strings that determines when it is visible. The singleton tracks an active <code>commandContext</code> (a single string) and a <code>context</code> array (the set of contexts the current page/app state provides). An option appears only when its <code>context</code> intersects the active set.</p>
+<a11y-collapse heading-button="heading-button">
+<h2 slot="heading">Context values</h2>
+<div slot="content">
+<ul>
+<li><strong>*</strong> — Global — always available (the default when <code>context</code> is omitted).</li>
+<li><strong>CMS</strong> — Available while in the HAXcms site-editor context.</li>
+<li><strong>HAX</strong> — Available while in the HAX body editor (authoring) context.</li>
+<li><strong>admin</strong> — Available for admin/site-settings operations.</li>
+<li><strong>logged-in</strong> — Available only when the user is authenticated.</li>
+<li><strong>&gt;</strong> — Developer mode — a special context entered by typing <code>&gt;</code> in the palette.</li>
+</ul>
+</div>
+</a11y-collapse>
+<p>The user switches the active <code>commandContext</code> by typing a prefix character (<code>/</code>, <code>*</code>, or <code>&gt;</code>) into the search input, or via voice ("run program" → <code>/</code>, "developer mode" → <code>&gt;</code>). When <code>commandContext</code> is <code>"*"</code> (global browse), options are filtered against the page's <code>context</code> array; when it is a specific value, only options whose <code>context</code> includes that value are shown.</p> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>Voice &amp; Shortcut Metadata</title>
+    <id>item-c02588da-ee36-4c30-94c4-4ac8f7b382af</id>
+    <updated>2026-10-30T17:58:30.000Z</updated>
+    <published>2026-10-30T17:58:30.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/voice-shortcut-metadata"/>
+    
+    <content type="html">
+      <![CDATA[ <h2>Voice command layer (optional facet)</h2>
+<p>When <code>voiceSearch</code> is enabled on the <code>super-daemon</code> element, the <code>hal-9000</code> speech engine is loaded and Merlin's commands become voice-addressable. Each Option can declare a <code>voice</code> phrase pattern; if omitted, the <code>title</code> is used. The pattern syntax uses parenthesized segments for optional words, e.g. <code>"(toggle) dark mode"</code> matches both "toggle dark mode" and "dark mode".</p>
+<p>Voice commands are re-processed (<code>reprocessVoiceCommands()</code>) whenever the visible item set changes (e.g. context switch), so only currently-relevant options are voice-addressable. A built-in catch-all (<code>"*anything"</code>) routes unrecognized speech into the search input.</p>
+<p>This layer is optional — Options and Programs work fully without it. The <code>voice</code> field is purely additive.</p>
+<h2>Shortcut metadata (optional facet)</h2>
+<p>An Option (or Program entry row) can declare a <code>shortcut</code> field that links it to the shared <strong>KeyboardShortcutManager</strong> registry — the single source of truth for keyboard/insertion shortcuts across the HAX ecosystem. That registry is also used by HAXcms <code>Ctrl+Shift+[Key]</code> bindings and the HAXStore markdown-trigger-to-gizmo map, so a Merlin option can reference the same shortcut descriptor those subsystems use.</p>
+<p><code>shortcut</code> accepts either a registry id string (e.g. <code>"cms-save"</code>) — resolves to a descriptor previously registered via <code>KeyboardShortcutManagerInstance.register(...)</code> — or an inline descriptor object with the canonical shape:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>{
+  id: "cms-save",                          // stable unique id
+  type: "binding",                         // 'binding' (modifier+key) | 'markdown' (typed trigger insert)
+  key: "S",                                // physical key (binding)
+  ctrl: true, shift: true, alt: false, meta: false, // binding modifiers
+  trigger: "###",                          // markdown trigger (type: 'markdown')
+  tag: "h3",                               // markdown insert target tag
+  content: "",                             // markdown insert inner content
+  description: "Save page",                // human-readable
+  context: "edit",                         // 'edit' | 'view' | 'global'
+  allowInInput: false,                     // whether the binding fires while focus is in an input
+  callback: Function,                      // optional direct callback (binding)
+  condition: Function,                     // optional active-condition (binding)
+  eventName: "super-daemon-element-method", // optional event to fire instead of / alongside callback
+}</template></code-sample>
+<p>When <code>shortcut</code> is present, <code>defineOption()</code> resolves a human-readable label via <code>KeyboardShortcutManager.getLabel()</code> and stores it on <code>shortcutLabel</code> (e.g. <code>"Ctrl⇧S"</code> for a binding, <code>"###"</code> for a markdown trigger). The UI reads <code>shortcutLabel</code> to render a keyboard hint in the row. Both <code>shortcut</code> and <code>shortcutLabel</code> are excluded from the search index so they don't pollute text matching.</p>
+<p>Real example (from <code>haxcms-site-editor-ui.js</code>):</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+  title: this.t.save,
+  icon: "icons:save",
+  tags: ["CMS", "save", "page"],
+  shortcut: "cms-save", // links to the Ctrl+Shift+S binding
+  value: { target: this, method: "_editButtonTap" },
+  context: "HAX",
+  eventName: "super-daemon-element-method",
+  path: "CMS/action/save",
+});</template></code-sample>
+<p>This layer is optional — the <code>shortcut</code> field is purely additive and does not change how an option is invoked; it only surfaces a keyboard-hint label in the UI and (optionally) ties the option to a shared descriptor for cross-subsystem consistency.</p> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>Rules &amp; Minimal Samples</title>
+    <id>item-16547bb8-ca34-4622-a79f-582912f974b9</id>
+    <updated>2026-10-30T17:58:35.000Z</updated>
+    <published>2026-10-30T17:58:35.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/rules-minimal-samples"/>
+    
+    <content type="html">
+      <![CDATA[ <h2>Rules for tools and agents registering Merlin commands</h2>
+<ol>
+<li><strong>Required:</strong> <code>title</code>, <code>value</code>, <code>eventName</code>. <code>defineOption()</code> silently ignores options missing any of them.</li>
+<li><strong>Match <code>value</code> to <code>eventName</code>:</strong> <code>{target, method, args?}</code> for <code>super-daemon-element-method</code>, <code>{target}</code> for <code>super-daemon-element-click</code>, <code>{name, program, ...}</code> for <code>super-daemon-run-program</code>, <code>{shortcutId}</code> for <code>execute-keyboard-shortcut</code>.</li>
+<li><strong>Use arrays for <code>context</code></strong> (<code>["CMS"]</code>). A string context is matched with <code>String.includes</code>, so it matches by substring. Program <code>value.context</code> is the opposite: one string, because it becomes the active command context.</li>
+<li><strong>Never set <code>index</code></strong>, and don't set <code>shortcutLabel</code> on registered options: <code>defineOption()</code> builds both. Program result rows skip <code>defineOption()</code>, so set <code>shortcutLabel</code> there yourself if you want a key hint.</li>
+<li><strong>Pick <code>inline</code> or <code>inlineOnly</code>, not both.</strong> <code>hidden</code> and <code>inlineOnly</code> programs need a <code>machineName</code>, because that's the only way to launch them.</li>
+<li><strong>No unknown keys.</strong> Custom keys must start with <code>x-</code>, and remember every string field (including <code>x-</code> ones) goes into the search index.</li>
+<li><strong>Scan before you finish:</strong> <code>merlin-validate --scan &lt;file&gt;</code>.</li>
+</ol>
+<h2>Minimal working sample</h2>
+<p>A static Option (fires one event and closes):</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>import { SuperDaemonInstance } from "@haxtheweb/super-daemon/super-daemon.js";
+
+SuperDaemonInstance.defineOption({
+  title: "Save",
+  icon: "icons:save",
+  tags: ["CMS", "save", "page"],
+  shortcut: "cms-save", // links to the Ctrl+Shift+S binding
+  context: "HAX",
+  eventName: "super-daemon-element-method",
+  path: "CMS/action/save",
+  value: {
+    target: this,
+    method: "_editButtonTap",
+  },
+});</template></code-sample>
+<p>A dynamic Program (launches a search-driven sub-palette):</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>SuperDaemonInstance.defineOption({
+  title: "Export this site",
+  icon: "icons:file-download",
+  tags: ["CMS", "export", "site"],
+  eventName: "super-daemon-run-program",
+  path: "CMS/export/site",
+  context: ["CMS"],
+  voice: "export site",
+  value: {
+    name: "Export this site",
+    machineName: "export-site",
+    program: async (input, values) =&gt; {
+      const { createExportSiteProgram } = await import(
+        "./utils/ExportSiteProgram.js"
+      );
+      return createExportSiteProgram(this)(input, values);
+    },
+  },
+});</template></code-sample>
+<h2>Validation</h2>
+<p>Merlin options are JS objects in source files, so the most useful check is the static scan:</p>
+<code-sample type="javascript" copy-clipboard-button="copy-clipboard-button"><template>npx -p @haxtheweb/merlin-schema merlin-validate --scan elements/my-element/my-element.js</template></code-sample>
+<p><code>--scan</code> validates every <code>*.defineOption({...})</code> object literal as a registered option and every other object literal with <code>title</code> + <code>eventName</code> + <code>value</code> as a Program result row. Values that are not literals (<code>this.t.save</code>, function references, lit templates) are accepted as-is; literal values, keys and <code>value</code> shapes are checked. JSON files are validated without <code>--scan</code>; add <code>--rows</code> for arrays of Program result rows and <code>--json</code> for a structured report.</p> ]]>
+    </content>
+  </entry>
+  <entry>
+    <title>More Schemas</title>
+    <id>item-fd6de181-9d47-4175-8a81-d0de3adcc517</id>
+    <updated>2026-10-30T17:58:42.000Z</updated>
+    <published>2026-10-30T17:58:42.000Z</published>
+    <summary></summary>
+    <link href="https://localhost/merlin-schema-docs/more-schemas"/>
+    
+    <content type="html">
+      <![CDATA[ <p>merlin-schema is one of several schema specifications in the HAX ecosystem. Explore the others:</p>
+<ul>
+<li><a href="https://haxtheweb.github.io/json-outline-schema/">JSON Outline Schema</a> — the content structure, site navigation, and metadata schema used by HAXcms.</li>
+<li><a href="https://haxtheweb.github.io/hax-schema/">HAX Schema</a> — the full haxProperties contract for element authoring.</li>
+<li><a href="https://haxtheweb.github.io/hax-element-schema/">HAX Element Schema</a> — the lightweight virtual DOM object format used for demoSchema, insertion, and conversion workflows.</li>
+<li><a href="https://haxtheweb.github.io/appstore-spec/">Appstore Spec</a> — the schema for external media providers, upload targets, stax templates, and autoloaded elements.</li>
+</ul>
+<p>New to HAX? <a href="https://haxtheweb.org/">Get started with HAX</a>.</p> ]]>
+    </content>
+  </entry>
+</feed>

@@ -1,0 +1,173 @@
+{
+  "id": "6f01a5e0-153b-4622-905c-1d4ec10b7968",
+  "title": "Merlin Schema",
+  "author": "",
+  "description": "Authoritative documentation for the Merlin command-palette and voice-assistant schema used across the HAX ecosystem.",
+  "license": "by-sa",
+  "metadata": {
+    "author": {},
+    "site": {
+      "name": "merlin-schema-docs",
+      "logo": "assets/banner.jpg",
+      "settings": {
+        "lang": "en-US",
+        "publishPagesOn": true,
+        "canonical": true,
+        "pathauto": true
+      },
+      "created": 1793382955,
+      "updated": 1793382955,
+      "git": {
+        "vendor": "github",
+        "branch": "gh-pages"
+      }
+    },
+    "theme": {
+      "element": "clean-one",
+      "path": "@haxtheweb/clean-one/clean-one.js",
+      "name": "Clean One",
+      "thumbnail": "@haxtheweb/haxcms-elements/lib/theme-screenshots/theme-clean-one-thumb.jpg",
+      "description": "Start with a blank site using the Clean One",
+      "category": [
+        "Course"
+      ],
+      "hidden": false,
+      "priority": -2,
+      "terrible": false,
+      "supportedPalettes": [
+        "4",
+        "5"
+      ],
+      "variables": {
+        "icon": "icons:book",
+        "hexCode": "#1e407c",
+        "cssVariable": "--ddd-primary-1"
+      }
+    },
+    "node": {
+      "fields": {}
+    },
+    "platform": {
+      "audience": "expert",
+      "features": {},
+      "allowedBlocks": []
+    },
+    "build": {
+      "version": "26.8.0",
+      "structure": "course",
+      "type": "own"
+    }
+  },
+  "items": [
+    {
+      "id": "item-6f07a522-e993-4c8c-b360-fe044ae2e4d2",
+      "indent": 0,
+      "location": "pages/item-6f07a522-e993-4c8c-b360-fe044ae2e4d2/index.html",
+      "slug": "welcome",
+      "order": 0,
+      "parent": null,
+      "title": "Overview",
+      "description": "",
+      "metadata": {
+        "created": 1793382955,
+        "updated": 1793382955
+      }
+    },
+    {
+      "id": "item-5861a757-2f3e-4f38-a7c3-c20c51e52c46",
+      "indent": 0,
+      "location": "pages/item-5861a757-2f3e-4f38-a7c3-c20c51e52c46/index.html",
+      "slug": "option-schema-reference",
+      "order": 1,
+      "parent": null,
+      "title": "Option Schema Reference",
+      "description": "",
+      "metadata": {
+        "created": 1793383089,
+        "updated": 1793383089,
+        "images": [],
+        "videos": []
+      }
+    },
+    {
+      "id": "item-a2189239-ca25-4a0f-88ea-8f36eeda8678",
+      "indent": 0,
+      "location": "pages/item-a2189239-ca25-4a0f-88ea-8f36eeda8678/index.html",
+      "slug": "program-schema-reference",
+      "order": 2,
+      "parent": null,
+      "title": "Program Schema Reference",
+      "description": "",
+      "metadata": {
+        "created": 1793383096,
+        "updated": 1793383096,
+        "images": [],
+        "videos": []
+      }
+    },
+    {
+      "id": "item-11daea04-e197-4ace-94b1-e52fa8059257",
+      "indent": 0,
+      "location": "pages/item-11daea04-e197-4ace-94b1-e52fa8059257/index.html",
+      "slug": "event-contract-context-system",
+      "order": 3,
+      "parent": null,
+      "title": "Event Contract & Context System",
+      "description": "",
+      "metadata": {
+        "created": 1793383103,
+        "updated": 1793383103,
+        "images": [],
+        "videos": []
+      }
+    },
+    {
+      "id": "item-c02588da-ee36-4c30-94c4-4ac8f7b382af",
+      "indent": 0,
+      "location": "pages/item-c02588da-ee36-4c30-94c4-4ac8f7b382af/index.html",
+      "slug": "voice-shortcut-metadata",
+      "order": 4,
+      "parent": null,
+      "title": "Voice & Shortcut Metadata",
+      "description": "",
+      "metadata": {
+        "created": 1793383110,
+        "updated": 1793383110,
+        "images": [],
+        "videos": []
+      }
+    },
+    {
+      "id": "item-16547bb8-ca34-4622-a79f-582912f974b9",
+      "indent": 0,
+      "location": "pages/item-16547bb8-ca34-4622-a79f-582912f974b9/index.html",
+      "slug": "rules-minimal-samples",
+      "order": 5,
+      "parent": null,
+      "title": "Rules & Minimal Samples",
+      "description": "",
+      "metadata": {
+        "created": 1793383115,
+        "updated": 1793383115,
+        "images": [],
+        "videos": []
+      }
+    },
+    {
+      "id": "item-fd6de181-9d47-4175-8a81-d0de3adcc517",
+      "indent": 0,
+      "location": "pages/item-fd6de181-9d47-4175-8a81-d0de3adcc517/index.html",
+      "slug": "more-schemas",
+      "order": 6,
+      "parent": null,
+      "title": "More Schemas",
+      "description": "",
+      "metadata": {
+        "created": 1793383122,
+        "updated": 1793383122,
+        "images": [],
+        "videos": []
+      }
+    }
+  ]
+}
